@@ -1,42 +1,116 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1722">
 <title>Intech Engineers CRM</title>
 <style>
-:root{--bg:#f4f5f7;--sf:#fff;--tx:#1a2230;--mu:#667085;--bd:#e1e4ea;--ac:#c2410c;--ac2:#fff;--ok:#15803d;--wa:#b45309;--bad:#b91c1c;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161d;--sf:#1b212b;--tx:#e8ebf0;--mu:#97a0af;--bd:#2c3441;--ac:#fb923c;--ac2:#1a1206;--ok:#4ade80;--wa:#fbbf24;--bad:#f87171;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#12161d;--sf:#1b212b;--tx:#e8ebf0;--mu:#97a0af;--bd:#2c3441;--ac:#fb923c;--ac2:#1a1206;--ok:#4ade80;--wa:#fbbf24;--bad:#f87171;color-scheme:dark}
-*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:root{--bg:#eef1f6;--sf:#fff;--tx:#142033;--mu:#5b677a;--bd:#dde2ea;--ac:#1d4ed8;--ac2:#fff;--ok:#15803d;--wa:#b45309;--bad:#b91c1c;--nav:#0f1722;--hv:#f5f7fb;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1117;--sf:#161c26;--tx:#e6eaf1;--mu:#93a0b4;--bd:#263042;--ac:#5b8def;--ac2:#07122b;--ok:#4ade80;--wa:#fbbf24;--bad:#f87171;--nav:#0a0f16;--hv:#1b2330;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1117;--sf:#161c26;--tx:#e6eaf1;--mu:#93a0b4;--bd:#263042;--ac:#5b8def;--ac2:#07122b;--ok:#4ade80;--wa:#fbbf24;--bad:#f87171;--nav:#0a0f16;--hv:#1b2330;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
 button,input,select,textarea{font:inherit;color:inherit}
-.btn{background:var(--ac);color:var(--ac2);border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
-.btn.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}.btn.s{padding:4px 9px;font-size:13px}.btn.r{color:var(--bad)}
-input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--sf)}
-label{display:block;font-size:12px;color:var(--mu);margin:10px 0 3px}
-#login{min-height:80vh;display:grid;place-items:center;padding:16px}
-.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:16px}
-.lg{width:100%;max-width:380px}.lg h1{margin:0 0 2px;font-size:22px}.lg p{color:var(--mu);margin:0 0 8px}
+button{-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.btn{background:var(--ac);color:var(--ac2);border:1px solid var(--ac);border-radius:9px;padding:9px 16px;cursor:pointer;font-weight:600;min-height:38px;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:filter .12s}
+.btn:hover{filter:brightness(1.08)}
+.btn.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}.btn.g:hover{background:var(--hv);filter:none}
+.btn.s{padding:5px 10px;font-size:13px;min-height:32px}.btn.r{color:var(--bad)}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--bd);border-radius:9px;background:var(--sf);min-height:40px}
+input:focus,select:focus,textarea:focus{border-color:var(--ac);outline:2px solid color-mix(in srgb,var(--ac) 30%,transparent);outline-offset:0}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--mu);margin:12px 0 4px}
+h2,h3{letter-spacing:-.01em}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:18px}
 .err{color:var(--bad);font-size:13px;min-height:18px;margin-top:8px}
-#app{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
-nav{background:var(--sf);border-right:1px solid var(--bd);padding:14px 10px;position:sticky;top:0;align-self:start;height:100vh;overflow:auto}
-nav b{display:block;padding:4px 10px 12px;font-size:16px}nav b span{color:var(--ac)}
-nav button{display:block;width:100%;text-align:left;background:none;border:0;padding:9px 10px;border-radius:8px;cursor:pointer;color:var(--tx)}
-nav button.on{background:var(--ac);color:var(--ac2);font-weight:600}
-main{padding:18px;min-width:0}
-.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.top h2{margin:0;flex:1;font-size:20px}.top input{max-width:220px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
-.stat small{color:var(--mu);display:block}.stat b{font-size:22px}
-.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:620px}
-th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--bd);vertical-align:top}th{font-size:12px;color:var(--mu);text-transform:uppercase}
-.one td,.one th{white-space:nowrap}.one .tn{display:inline-block;max-width:340px;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom}.one{min-width:1000px}
-.tag{display:inline-block;padding:1px 8px;border-radius:99px;border:1px solid var(--bd);font-size:12px}
+/* ---------- login ---------- */
+#login{min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:20px;background:linear-gradient(180deg,var(--nav) 0,var(--nav) 34%,var(--bg) 34%)}
+.lg{width:100%;max-width:400px;padding:26px 24px;box-shadow:0 12px 40px #0003}
+.lg .lgw{text-align:center;margin:-62px 0 14px}
+.lg h1{margin:0 0 2px;font-size:23px;text-align:center}.lg p{color:var(--mu);margin:0 0 10px;text-align:center}
+/* ---------- shell ---------- */
+#app{display:grid;grid-template-columns:244px minmax(0,1fr);min-height:100vh;min-height:100dvh}
+nav.side{background:var(--nav);color:#c9d2e0;padding:18px 12px;position:sticky;top:0;align-self:start;height:100vh;height:100dvh;overflow:auto;display:flex;flex-direction:column;gap:2px}
+.brand{padding:2px 6px 18px}
+nav.side button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:0;padding:10px 12px;border-radius:9px;cursor:pointer;color:inherit;font-size:14.5px;min-height:42px}
+nav.side button i{font-style:normal;width:22px;text-align:center;font-size:16px}
+nav.side button:hover{background:#ffffff12}
+nav.side button.on{background:#ffffff1f;color:#fff;font-weight:600;box-shadow:inset 3px 0 0 #ef4444}
+nav.side .sp{flex:1}
+nav.side small{opacity:.7}
+main{padding:28px 34px 40px;min-width:0;max-width:1320px;width:100%}
+.mbar,.tabs,.sheet,.sheet-bg{display:none}
+.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.top h2{margin:0;flex:1;font-size:24px;min-width:140px}
+.top input{max-width:240px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.stat{padding:16px 18px}
+.stat small{color:var(--mu);display:block;font-size:13px}
+.stat b{font-size:26px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.3}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:620px}
+th,td{text-align:left;padding:10px 9px;border-bottom:1px solid var(--bd);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-size:12px;color:var(--mu);font-weight:600;white-space:nowrap}
+.lt tr:not(.hd):hover td{background:var(--hv)}
+.one td,.one th{white-space:nowrap}.one .tn{display:inline-block;max-width:230px;white-space:normal;vertical-align:top;line-height:1.35}.one{min-width:860px}
+.lw{padding:4px 6px}
+.top>small{order:5}
+.act{white-space:nowrap}
+.tag{display:inline-block;padding:1px 9px;border-radius:99px;border:1px solid var(--bd);font-size:12.5px;background:var(--hv)}
 .ok{color:var(--ok)}.wa{color:var(--wa)}.bad{color:var(--bad)}
-.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden;min-width:70px}.bar i{display:block;height:100%;background:var(--ac)}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.al{border-left:4px solid var(--wa);padding:8px 12px;margin-bottom:8px;background:var(--sf);border-radius:8px;border:1px solid var(--bd);border-left-width:4px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}.al div{flex:1;min-width:180px}
-dialog{border:1px solid var(--bd);border-radius:12px;background:var(--sf);color:var(--tx);width:min(480px,94vw);max-height:90vh;padding:16px}
-dialog::backdrop{background:#0008}
-@media(max-width:760px){#app{grid-template-columns:1fr}nav{position:sticky;height:auto;display:flex;overflow-x:auto;gap:4px;padding:8px;z-index:5;border-right:0;border-bottom:1px solid var(--bd)}nav b{display:none}nav button{white-space:nowrap;width:auto}.row2{grid-template-columns:1fr}}
+.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden;min-width:70px}.bar i{display:block;height:100%;background:var(--ac);border-radius:9px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.al{padding:10px 14px;margin-bottom:8px;background:var(--sf);border-radius:10px;border:1px solid var(--bd);border-left:4px solid var(--wa);display:flex;gap:10px;align-items:center;flex-wrap:wrap}.al div{flex:1;min-width:180px}
+dialog{border:1px solid var(--bd);border-radius:14px;background:var(--sf);color:var(--tx);width:min(500px,94vw);max-height:90vh;max-height:90dvh;padding:20px;overflow:auto}
+dialog::backdrop{background:#0009}
+/* ---------- tablet & mobile ---------- */
+@media(max-width:900px){
+ body{font-size:15px}
+ #app{grid-template-columns:1fr}
+ nav.side{display:none}
+ .mbar{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:20;background:var(--nav);padding:calc(8px + env(safe-area-inset-top,0px)) 14px 8px}
+ .mbar .btn{background:#ffffff1a;border-color:transparent;color:#fff;min-width:42px;min-height:42px;padding:0}
+ main{padding:16px 14px calc(96px + env(safe-area-inset-bottom,0px))}
+ .tabs{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--sf);border-top:1px solid var(--bd);padding:4px 4px calc(4px + env(safe-area-inset-bottom,0px))}
+ .tabs button{background:none;border:0;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0;min-height:54px;color:var(--mu);font-size:11.5px;cursor:pointer;border-radius:10px}
+ .tabs button i{font-style:normal;font-size:20px;line-height:1.2}
+ .tabs button.on{color:var(--ac);font-weight:700}
+ .sheet-bg{display:block;position:fixed;inset:0;background:#0007;z-index:30}
+ .sheet{display:block;position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--sf);border-radius:18px 18px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));box-shadow:0 -8px 30px #0004}
+ .sheet button{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;border-bottom:1px solid var(--bd);padding:13px 6px;text-align:left;font-size:16px;cursor:pointer;min-height:50px}
+ .sheet button:last-child{border-bottom:0}.sheet button i{font-style:normal;width:26px;text-align:center}
+ .sheet button.on{color:var(--ac);font-weight:700}
+ input,select,textarea{font-size:16px;min-height:44px}
+ .btn{min-height:44px}.btn.s{min-height:38px;padding:6px 12px}
+ .top h2{font-size:21px;order:1;flex:1 1 auto}
+ .top #sq{max-width:none;flex:1 1 100%}
+ .top>*{order:4}
+ .top>[data-add]{order:2}
+ .top>#sq{order:3}
+ .grid{grid-template-columns:1fr 1fr;gap:10px}
+ .stat{padding:13px 14px}.stat b{font-size:21px}
+ .row2{grid-template-columns:1fr}
+ .card{padding:15px}
+ .lw{background:none!important;border:0!important;padding:0!important;overflow:visible}
+ .lt,.lt tbody{display:block;min-width:0!important;width:100%}
+ .lt tr.hd{display:none}
+ .lt tr{display:flex;flex-direction:column;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+ .lt td{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:5px 0;border:0!important;white-space:normal!important;text-align:right;background:none!important}
+ .lt td[data-l]::before{content:attr(data-l);color:var(--mu);font-size:12.5px;text-align:left;flex:0 0 36%}
+ .lt td.ttl{order:-1;display:block;text-align:left;font-size:16.5px;font-weight:700;padding:0 0 6px}
+ .lt td.ttl .tn{max-width:none;white-space:normal;display:block}
+ .lt td .bar{flex:1}
+ .lt td.e{display:none}
+ .top>small{order:5}
+ .lt td.act{justify-content:flex-start;flex-wrap:wrap;gap:8px;margin-top:8px;padding-top:12px;border-top:1px solid var(--bd)!important}
+ .lt td select{max-width:62%}
+ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:18px 18px 0 0;max-height:92vh;max-height:92dvh;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+ #login{background:linear-gradient(180deg,var(--nav) 0,var(--nav) 30%,var(--bg) 30%)}
+}
+@media(max-width:380px){.grid{grid-template-columns:1fr}}
+@media print{.mbar,.tabs,nav.side{display:none}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style></head><body>
 <div id="root"></div><dialog id="dlg"></dialog>
 <script>
@@ -50,7 +124,7 @@ if(db.set.logoV!==2){db.set.logo='';db.set.logoV=2}/* drop old saved logo so the
 if(!db.set.sent)db.set.sent={};
 const save=()=>{try{localStorage.setItem('intech_crm',JSON.stringify(db))}catch(e){}};
 let me=null;try{me=JSON.parse(sessionStorage.getItem('intech_me'))}catch(e){}
-let view='dash',q='',synced=0,tf='all',tshow=10,af='',auf='';
+let more=false,view='dash',q='',synced=0,tf='all',tshow=10,af='',auf='';
 const isFilled=t=>t.status=='Submitted';
 const hash=async p=>{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('intech:'+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')};
 const uid=()=>Math.random().toString(36).slice(2,8).toUpperCase();
@@ -220,7 +294,7 @@ function ai(){
  <div class="card"><b>Daily brief</b><pre style="white-space:pre-wrap;font:inherit;color:var(--mu);margin:8px 0">${esc(brief())}</pre><button class="btn s" data-bw>Send on WhatsApp</button> <button class="btn g s" data-bc>Copy</button></div></div>
  <div class="row2" style="margin-top:12px"><div class="card"><b>Tenders by authority</b>${bars(au)}</div><div class="card"><b>Last 6 months</b>${bars(mo)}</div></div>`;
 }
-const logo=()=>{const l=db.set.logo||LOGO;return l?`<img src="${l}" alt="Intech Engineers" style="max-width:100%;max-height:56px;display:block;margin:0 0 6px">`:''};
+const logo=(h=40)=>{const c=db.set.logo,l=c||LOGO,bg=c?'#fff;border:1px solid #dde2ea':'#0f1722';return l?`<span style="display:inline-block;background:${bg};border-radius:10px;padding:6px 10px;line-height:0;-webkit-print-color-adjust:exact;print-color-adjust:exact"><img src="${l}" alt="Intech Engineers" style="height:${h}px;width:auto;display:block"></span>`:''};
 
 function dash(){
  const open=db.tenders.filter(t=>t.status!='Closed'&&!['Won','Lost','Cancelled'].includes(t.award)&&(t.status=='Submitted'||dleft(t.date)>=0));
@@ -250,7 +324,7 @@ function listView(m){
  const tabs=m=='tenders'?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px">${[['all','All',cnt.all],['f','✅ Filled',cnt.f],['n','❌ Not filled',cnt.n]].map(([k,l,n])=>`<button class="btn ${tf==k?'':'g'} s" data-tf="${k}">${l} (${n})</button>`).join('')}${[['Award status','af',['Pending','Won','Lost','Cancelled']],['Authority','auf',[...AUTH,'Other']]].map(([l,v,o])=>`<select data-sel="${v}" style="width:auto"><option value="">${l}: All</option>${o.map(x=>`<option ${(v=='af'?af:auf)==x?'selected':''}>${x}</option>`).join('')}</select>`).join('')}${af||auf||tf!='all'?'<button class="btn g s" data-clr>Clear filters</button>':''}</div>`:'';
  const more=m=='tenders'&&left>0?`<p style="text-align:center;margin:12px 0"><small style="color:var(--mu)">Showing ${shown.length} of ${total}</small><br><button class="btn g" data-more="10">Show 10 more</button> <button class="btn" data-more="all">Show all (${total})</button></p>`:(m=='tenders'&&total>10?`<p style="text-align:center;margin:12px 0"><small style="color:var(--mu)">Showing all ${total}</small> <button class="btn g s" data-more="less">Show less</button></p>`:'');
  return `<div class="top"><h2>${cfg.t}</h2><input id="sq" placeholder="Search…" value="${esc(q)}">${m=='tenders'?`<button class="btn g" data-sy>↻ Sync sheet</button><button class="btn g" data-ic>⬆ Import CSV</button><input type="file" id="icf" accept=".csv" hidden><small style="color:var(--mu);flex-basis:100%">${esc(syncMsg||('Last sync: '+(db.set.last||'never')))}</small>`:''}<button class="btn g" data-ex="${m}">Export CSV</button><button class="btn" data-add="${m}">+ Add</button></div>
- ${tabs}<div class="card tw"><table class="${m=='tenders'?'one':''}"><tr>${hd.map(h=>`<th>${esc(h)}</th>`).join('')}<th></th></tr>${shown.map(r=>`<tr>${cfg.c.map(k=>`<td>${cell(k,r,m)}</td>`).join('')}<td style="white-space:nowrap">${m=='tenders'?`<button class="btn g s" data-wa="${r.id}" title="WhatsApp reminder">💬</button> <button class="btn g s" data-fn="${r.id}" title="Copy folder name">📁</button> `:''}${m=='tenders'&&r.link?`<a class="btn g s" href="${esc(r.link)}" target="_blank" rel="noopener" style="text-decoration:none" title="Open Drive folder">📂</a> `:''}${m=='tasks'?`<button class="btn g s" data-tg="${r.id}">${r.done?'Undo':'Done'}</button> `:''}${m=='quotes'?`<button class="btn g s" data-pr="${r.id}">Print</button> `:''}<button class="btn g s" data-ed="${m}|${r.id}">Edit</button> ${me.role=='admin'?`<button class="btn g s r" data-dl="${m}|${r.id}">✕</button>`:''}</td></tr>`).join('')||`<tr><td colspan="9" style="color:var(--mu)">No records yet. Click “+ Add”.</td></tr>`}</table></div>${more}`;
+ ${tabs}<div class="card tw lw"><table class="lt ${m=='tenders'?'one':''}"><tr class="hd">${hd.map(h=>`<th>${esc(h)}</th>`).join('')}<th></th></tr>${shown.map(r=>`<tr>${cfg.c.map((k,i)=>['name','title','no'].includes(k)?`<td class="ttl">${cell(k,r,m)}</td>`:`<td data-l="${esc(hd[i])}"${cell(k,r,m)===''?' class="e"':''}>${cell(k,r,m)}</td>`).join('')}<td class="act">${m=='tenders'?`<button class="btn g s" data-wa="${r.id}" title="WhatsApp reminder">💬</button> <button class="btn g s" data-fn="${r.id}" title="Copy folder name">📁</button> `:''}${m=='tenders'&&r.link?`<a class="btn g s" href="${esc(r.link)}" target="_blank" rel="noopener" style="text-decoration:none" title="Open Drive folder">📂</a> `:''}${m=='tasks'?`<button class="btn g s" data-tg="${r.id}">${r.done?'Undo':'Done'}</button> `:''}${m=='quotes'?`<button class="btn g s" data-pr="${r.id}">Print</button> `:''}<button class="btn g s" data-ed="${m}|${r.id}">Edit</button> ${me.role=='admin'?`<button class="btn g s r" data-dl="${m}|${r.id}">✕</button>`:''}</td></tr>`).join('')||`<tr><td colspan="9" style="color:var(--mu)">No records yet. Click “+ Add”.</td></tr>`}</table></div>${more}`;
 }
 function csv(m){
  const f=E[m].f.filter(x=>x[2]!='check'||1);const L=[f.map(x=>x[1]).join(',')];
@@ -262,15 +336,22 @@ function printQuote(id){
  const x=db.quotes.find(a=>a.id==id),w=window.open('','_blank');if(!w)return;
  w.document.write(`<title>Quotation ${esc(x.no)}</title><body style="font-family:sans-serif;max-width:700px;margin:30px auto">${logo()}<h2>INTECH ENGINEERS</h2><h3>Quotation ${esc(x.no)}</h3><p>Date: ${esc(fd(x.date))}<br>To: ${esc(clientName(x.client))}</p><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%"><tr><th>Description</th><th>Amount</th></tr><tr><td>${esc(x.item)}</td><td>${inr(x.amount)}</td></tr><tr><td>GST @ ${esc(x.gst)}%</td><td>${inr(quoteTotal(x)-x.amount)}</td></tr><tr><th>Total</th><th>${inr(quoteTotal(x))}</th></tr></table><script>print()<\/script>`);w.document.close();
 }
-const NAV=[['dash','📊 Dashboard'],['clients','👥 Clients'],['tenders','📑 Tenders'],['ai','🤖 AI Assistant'],['projects','🏗 Projects'],['quotes','🧾 Quotations'],['tasks','✅ Tasks'],['team','⚙ Team']];
+const NAV=[['dash','📊','Dashboard'],['clients','👥','Clients'],['tenders','📑','Tenders'],['ai','🤖','AI Assistant'],['projects','🏗','Projects'],['quotes','🧾','Quotations'],['tasks','✅','Tasks'],['team','⚙','Team']];
+const TABS=['dash','tenders','clients','tasks'],MORE=NAV.map(n=>n[0]).filter(k=>!TABS.includes(k));
 function draw(){
  if(!me)return loginView();if(!synced){synced=1;syncSheet();setTimeout(()=>{autoRemind();remindPopup()},4000)}
- R.innerHTML=`<div id="app"><nav><b>${logo()}INTECH <span>ENGINEERS</span></b>${NAV.map(([k,l])=>`<button data-v="${k}" class="${view==k?'on':''}">${l}</button>`).join('')}<button id="th">🌓 Theme</button><button id="lo">⏻ Logout (${esc(me.user)})</button></nav><main>${view=='dash'?dash():view=='team'?team():view=='ai'?ai():listView(view)}</main></div>`;
+ const nb=(k,i,l,c)=>`<button data-v="${k}" class="${view==k?'on':''}"><i>${i}</i>${c?'':l}${c?`<span>${l}</span>`:''}</button>`;
+ R.innerHTML=`<div id="app"><nav class="side"><div class="brand">${logo(44)}</div>${NAV.map(([k,i,l])=>nb(k,i,l)).join('')}<div class="sp"></div><button data-th><i>🌓</i>Theme</button><button data-lo><i>⏻</i><span>Logout <small>(${esc(me.user)})</small></span></button></nav>
+ <header class="mbar">${logo(34)}<button class="btn" data-th aria-label="Switch theme">🌓</button></header>
+ <main>${view=='dash'?dash():view=='team'?team():view=='ai'?ai():listView(view)}</main>
+ <div class="tabs">${TABS.map(k=>NAV.find(n=>n[0]==k)).map(([k,i,l])=>nb(k,i,l,1)).join('')}<button data-moremenu class="${MORE.includes(view)||more?'on':''}"><i>☰</i><span>More</span></button></div>
+ ${more?`<div class="sheet-bg" data-closemore></div><div class="sheet">${NAV.filter(n=>MORE.includes(n[0])).map(([k,i,l])=>nb(k,i,l)).join('')}<button data-lo><i>⏻</i>Logout (${esc(me.user)})</button></div>`:''}</div>`;
  bind();
 }
 function bind(){
  const on=(sel,fn)=>R.querySelectorAll(sel).forEach(e=>e.onclick=()=>fn(e));
- on('[data-v]',e=>{view=e.dataset.v;q='';draw()});
+ on('[data-v]',e=>{view=e.dataset.v;q='';more=false;draw();scrollTo(0,0)});
+ on('[data-moremenu]',()=>{more=!more;draw()});on('[data-closemore]',()=>{more=false;draw()});
  on('[data-add]',e=>openForm(e.dataset.add));
  on('[data-ed]',e=>openForm(...e.dataset.ed.split('|')));
  on('[data-dl]',e=>{const[m,id]=e.dataset.dl.split('|');if(confirm('Delete this record?')){db[m]=db[m].filter(x=>x.id!=id);save();draw()}});
@@ -279,8 +360,8 @@ function bind(){
  on('[data-fn]',e=>{const t=db.tenders.find(x=>x.id==e.dataset.fn);navigator.clipboard&&navigator.clipboard.writeText(folder(t)).then(()=>alert('Copied: '+folder(t)),()=>prompt('Folder name',folder(t)))});
  on('[data-pr]',e=>printQuote(e.dataset.pr));
  on('[data-ex]',e=>csv(e.dataset.ex));
- on('#th',()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme=='dark'?'light':'dark'});
- on('#lo',()=>{me=null;sessionStorage.removeItem('intech_me');draw()});
+ on('[data-th]',()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme=='dark'?'light':'dark'});
+ on('[data-lo]',()=>{more=false;me=null;sessionStorage.removeItem('intech_me');draw()});
  const s=$('#sq');if(s)s.oninput=()=>{q=s.value;tshow=10;const p=s.selectionStart;draw();const n=$('#sq');n.focus();n.setSelectionRange(p,p)};
  const au=$('#au');if(au)au.onclick=async()=>{const n=$('#un').value.trim(),u=$('#uu').value.trim().toLowerCase(),p=$('#up').value;if(!n||!u||p.length<6){alert('Fill all fields; password min 6 characters.');return}if(db.users.some(x=>x.user==u)){alert('Username taken.');return}db.users.push({name:n,user:u,role:$('#ur').value,pw:await hash(p)});save();draw()};
  on('[data-du]',e=>{if(confirm('Remove user?')){db.users=db.users.filter(u=>u.user!=e.dataset.du);save();draw()}});
@@ -305,7 +386,7 @@ function bind(){
 }
 function loginView(){
  const first=!db.users.length;
- R.innerHTML=`<div id="login"><div class="card lg">${logo()}<h1>Intech Engineers</h1><p>${first?'Welcome! Create the admin account to begin.':'Sign in to your CRM'}</p>${first?'<label>Your name</label><input id="n">':''}<label>Username</label><input id="u" autocomplete="username"><label>Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="e"></div><button class="btn" id="go" style="width:100%">${first?'Create admin &amp; enter':'Sign in'}</button></div></div>`;
+ R.innerHTML=`<div id="login"><div class="card lg"><div class="lgw">${logo(54)}</div><h1>Intech Engineers</h1><p>${first?'Welcome! Create the admin account to begin.':'Sign in to your CRM'}</p>${first?'<label>Your name</label><input id="n">':''}<label>Username</label><input id="u" autocomplete="username"><label>Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="e"></div><button class="btn" id="go" style="width:100%">${first?'Create admin &amp; enter':'Sign in'}</button></div></div>`;
  const go=async()=>{
   const u=$('#u').value.trim().toLowerCase(),p=$('#p').value,e=$('#e');
   if(!u||!p){e.textContent='Enter username and password.';return}
