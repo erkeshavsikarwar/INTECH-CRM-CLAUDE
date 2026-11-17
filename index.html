@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#0f1722">
 <title>Intech Engineers CRM</title>
 <style>
@@ -119,11 +120,52 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 let db;try{db=JSON.parse(localStorage.getItem('intech_crm'))}catch(e){}
 db=db||{users:[],clients:[],tenders:[],projects:[],tasks:[],quotes:[],set:{wa:''}};
 const LOGO='data:image/png;base64,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';
-db.set=Object.assign({wa:'',sheet:'1XFmAsJyJxvgOIkGYnM0Xy6htWByZvQD8vjB2oVz8fD0',gid:'0',logo:'',cmb:'',prov:'cmb',p1:'',p2:'',sent:{}},db.set||{});
-if(db.set.logoV!==2){db.set.logo='';db.set.logoV=2}/* drop old saved logo so the new one shows */
-if(!db.set.sent)db.set.sent={};
-const save=()=>{try{localStorage.setItem('intech_crm',JSON.stringify(db))}catch(e){}};
-let me=null;try{me=JSON.parse(sessionStorage.getItem('intech_me'))}catch(e){}
+/* ===== FIXED LOGIN + CLOUD DATABASE SETTINGS ===== */
+const OWNER='intech engineers',PWH='d25db7d72523cba5ae349f25f4d486406dedd18aeedcd7c5bad0978f3cd055c6';
+/* Paste your Firebase values here (see setup steps). Leave empty = data stays only in this browser. */
+const CLOUD={apiKey:'AIzaSyCg-xbapyII8v_pRkQgmRT2hUfZJwlyp6A',dbUrl:'https://intech-crm-6add2-default-rtdb.firebaseio.com',email:'crm@intechengineers.app'};
+const CLOUD_ON=!!(CLOUD.apiKey&&CLOUD.dbUrl);CLOUD.dbUrl=CLOUD.dbUrl.replace(/\/+$/,'');
+const COLS=['clients','tenders','projects','tasks','quotes'];
+const blank=()=>({clients:[],tenders:[],projects:[],tasks:[],quotes:[],set:{}});
+function norm(o){o=Object.assign(blank(),o||{});COLS.forEach(k=>{o[k]=Array.isArray(o[k])?o[k].filter(Boolean):Object.values(o[k]||{})});
+ o.set=Object.assign({wa:'',sheet:'1XFmAsJyJxvgOIkGYnM0Xy6htWByZvQD8vjB2oVz8fD0',gid:'0',logo:'',cmb:'',prov:'cmb',p1:'',p2:'',sent:{}},o.set||{});
+ if(o.set.logoV!==2){o.set.logo='';o.set.logoV=2}if(!o.set.sent)o.set.sent={};delete o.users;return o}
+db=norm(db);
+let base=0,dirty=false,pushing=false,pend=0,cloudMsg='',loginMsg='',fails=0,lock=0;
+let sess=null;try{sess=JSON.parse(sessionStorage.getItem('intech_sess'))}catch(e){}
+let me=sess&&sess.u==OWNER&&(CLOUD_ON?sess.refreshToken:sess.t==PWH)?{user:OWNER,role:'admin',name:'Intech Engineers'}:null;
+const jf=async(u,o)=>{const r=await fetch(u,o),j=await r.json().catch(()=>null);if(!r.ok)throw new Error((j&&j.error&&(j.error.message||j.error))||('HTTP '+r.status));return j};
+async function token(){
+ if(!sess)throw new Error('not signed in');
+ if(Date.now()<sess.exp-60000)return sess.idToken;
+ const j=await jf('https://securetoken.googleapis.com/v1/token?key='+CLOUD.apiKey,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(sess.refreshToken)});
+ sess.idToken=j.id_token;sess.refreshToken=j.refresh_token;sess.exp=Date.now()+(+j.expires_in)*1000;sessionStorage.setItem('intech_sess',JSON.stringify(sess));return sess.idToken}
+const bannerText=()=>CLOUD_ON?cloudMsg:'⚠ Cloud database is not connected — data is saved only in this browser and will NOT appear on other browsers/devices.';
+const banner=()=>{const t=bannerText();return `<div id="cs" class="al" style="${t?'':'display:none'}"><div>${esc(t)}</div></div>`};
+const setBanner=()=>{const e=$('#cs');if(e){const t=bannerText();e.style.display=t?'':'none';e.firstChild.textContent=t}};
+const redraw=()=>{const a=document.activeElement;if(me&&!D.open&&!(a&&['INPUT','TEXTAREA','SELECT'].includes(a.tagName)))draw()};
+function save(){
+ db._ts=Date.now();
+ if(!CLOUD_ON){try{localStorage.setItem('intech_crm',JSON.stringify(db))}catch(e){}return}
+ dirty=true;clearTimeout(pend);pend=setTimeout(push,600)}
+async function push(){
+ if(!CLOUD_ON||!sess)return;
+ if(pushing){clearTimeout(pend);pend=setTimeout(push,500);return}
+ if(!dirty)return;pushing=true;
+ try{
+  const t=await token(),rts=await jf(`${CLOUD.dbUrl}/crm/_ts.json?auth=${t}`);
+  if(rts&&rts>base){const j=await jf(`${CLOUD.dbUrl}/crm.json?auth=${t}`);db=norm(j);base=db._ts||0;dirty=false;cloudMsg='Data was changed on another device and has been refreshed — please re-check your last edit.';pushing=false;draw();return}
+  const ts=db._ts,body=JSON.stringify(db);dirty=false;
+  await jf(`${CLOUD.dbUrl}/crm.json?auth=${t}`,{method:'PUT',body});
+  base=ts;cloudMsg='';
+ }catch(e){dirty=true;cloudMsg='Could not save to cloud ('+e.message+'). Retrying…';clearTimeout(pend);pend=setTimeout(push,5000)}
+ pushing=false;setBanner()}
+async function pull(first){
+ const t=await token();
+ if(!first){const ts=await jf(`${CLOUD.dbUrl}/crm/_ts.json?auth=${t}`);if(!ts||ts<=base)return false}
+ const j=await jf(`${CLOUD.dbUrl}/crm.json?auth=${t}`);
+ if(!j){if(first&&COLS.some(k=>db[k].length)){dirty=true;await push();if(!dirty)try{localStorage.removeItem('intech_crm')}catch(e){}}return first}
+ db=norm(j);base=db._ts||0;return true}
 let more=false,view='dash',q='',synced=0,tf='all',tshow=10,af='',auf='';
 const isFilled=t=>t.status=='Submitted';
 const hash=async p=>{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('intech:'+p));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')};
@@ -137,12 +179,11 @@ const folder=t=>t.date?`${fd(t.date)} ${t.name} TENDER`.toUpperCase():'';
 const quoteTotal=x=>Number(x.amount||0)*(1+Number(x.gst??18)/100);
 
 const clientOpts=()=>db.clients.map(c=>[c.id,c.name]);
-const userOpts=()=>db.users.map(u=>[u.name,u.name]);
 const E={
 clients:{t:'Clients & Leads',f:[['name','Company / Name','text'],['contact','Contact person','text'],['phone','Phone (with country code)','text'],['email','Email','text'],['city','City','text'],['status','Stage','select',['Lead','Contacted','Negotiation','Active','Inactive']],['notes','Notes','textarea']],c:['name','contact','phone','city','status']},
-tenders:{t:'Tenders',f:[['name','Tender name','text'],['tid','Tender ID','text'],['client','Client / Department','select',clientOpts],['date','Tender date','date'],['time','Time','time'],['value','Estimated value (₹)','number'],['status','Tender status','select',['Identified','Preparing','Submitted','Closed']],['award','Award status','select',['Pending','Won','Lost','Cancelled']],['owner','Assigned to','select',userOpts],['link','Drive link','url'],['notes','Description','textarea']],c:['tid','name','date','filled','award','owner','value']},
+tenders:{t:'Tenders',f:[['name','Tender name','text'],['tid','Tender ID','text'],['client','Client / Department','select',clientOpts],['date','Tender date','date'],['time','Time','time'],['value','Estimated value (₹)','number'],['status','Tender status','select',['Identified','Preparing','Submitted','Closed']],['award','Award status','select',['Pending','Won','Lost','Cancelled']],['owner','Assigned to','text'],['link','Drive link','url'],['notes','Description','textarea']],c:['tid','name','date','filled','award','owner','value']},
 projects:{t:'Projects',f:[['name','Project name','text'],['client','Client','select',clientOpts],['budget','Budget (₹)','number'],['progress','Progress %','number'],['deadline','Deadline','date'],['status','Status','select',['Planning','Running','On hold','Completed']]],c:['name','client','budget','progress','deadline','status']},
-tasks:{t:'Tasks',f:[['title','Task','text'],['who','Assigned to','select',userOpts],['due','Due date','date'],['pri','Priority','select',['High','Medium','Low']],['done','Done','check']],c:['title','who','due','pri','done']},
+tasks:{t:'Tasks',f:[['title','Task','text'],['who','Assigned to','text'],['due','Due date','date'],['pri','Priority','select',['High','Medium','Low']],['done','Done','check']],c:['title','who','due','pri','done']},
 quotes:{t:'Quotations',f:[['no','Quote no.','text'],['client','Client','select',clientOpts],['item','Description','text'],['amount','Amount before tax (₹)','number'],['gst','GST %','number'],['date','Date','date'],['status','Status','select',['Draft','Sent','Accepted','Rejected','Paid']]],c:['no','client','item','amount','total','status']}
 };
 function cell(k,r,m){
@@ -211,7 +252,7 @@ function remindPopup(){
  const d=dueTenders(),k=new Date().toISOString().slice(0,10);
  if(!d.length||sessionStorage.getItem('intech_pop')==k)return;
  sessionStorage.setItem('intech_pop',k);
- if(!db.set.wa){D.innerHTML='<h3 style="margin:0">⏰ Tender reminder</h3><p>'+d.length+' tender(s) due soon. Set your WhatsApp number in Team &amp; Settings to get reminders.</p><button class="btn" id="pc">OK</button>';D.showModal();$('#pc').onclick=()=>D.close();return}
+ if(!db.set.wa){D.innerHTML='<h3 style="margin:0">⏰ Tender reminder</h3><p>'+d.length+' tender(s) due soon. Set your WhatsApp number in Settings to get reminders.</p><button class="btn" id="pc">OK</button>';D.showModal();$('#pc').onclick=()=>D.close();return}
  D.innerHTML='<h3 style="margin:0">⏰ You have tender(s) due – kindly fill</h3>'+d.map(t=>'<div class="al"><div><b>'+esc(t.name)+'</b><br><small>'+esc(fd(t.date))+' '+esc(t.time||'')+' · '+(dleft(t.date)?'in '+dleft(t.date)+' days':'TODAY')+'</small></div><button class="btn s" data-pw="'+t.id+'">Send on WhatsApp</button></div>').join('')+'<p><button class="btn g" id="pc">Close</button></p>';
  D.showModal();$('#pc').onclick=()=>D.close();
  D.querySelectorAll('[data-pw]').forEach(b=>b.onclick=()=>wa(db.tenders.find(x=>x.id==b.dataset.pw)));
@@ -309,11 +350,10 @@ function dash(){
  <div class="card"><b>Overdue &amp; today’s tasks</b>${db.tasks.filter(t=>!t.done&&dleft(t.due)!=null&&dleft(t.due)<=0).map(t=>`<p style="margin:6px 0">• ${esc(t.title)} <small class="${dleft(t.due)<0?'bad':'wa'}">${esc(fd(t.due))}</small></p>`).join('')||'<p style="color:var(--mu)">Nothing overdue.</p>'}</div></div>`;
 }
 function team(){
- return `<div class="top"><h2>Team &amp; Settings</h2></div><div class="row2"><div class="card"><b>Users</b><div class="tw"><table style="min-width:0"><tr><th>Name</th><th>Username</th><th>Role</th><th></th></tr>${db.users.map(u=>`<tr><td>${esc(u.name)}</td><td>${esc(u.user)}</td><td>${u.role}</td><td>${me.role=='admin'?`<button class="btn g s" data-rp="${esc(u.user)}">Reset pw</button> `:''}${me.role=='admin'&&u.user!=me.user?`<button class="btn g s r" data-du="${esc(u.user)}">Remove</button>`:''}</td></tr>`).join('')}</table></div>
- ${me.role=='admin'?`<label>Add staff · name</label><input id="un"><label>Username</label><input id="uu"><label>Password</label><input id="up" type="password"><label>Role</label><select id="ur"><option>staff</option><option>admin</option></select><p><button class="btn" id="au">Add user</button></p>`:'<p style="color:var(--mu)">Only admins can add users.</p>'}</div>
+ return `<div class="top"><h2>Settings</h2></div><div class="row2"><div class="card"><b>Account</b><p style="margin:8px 0">Signed in as <b>${esc(me.user)}</b></p><p style="color:var(--mu);margin:4px 0">${CLOUD_ON?'☁ Cloud database connected — your data is available from any browser after login.':'⚠ Cloud database not connected — data is stored only in this browser.'}</p></div>
  <div class="card"><b>Reminder WhatsApp number</b><label>Number with country code (e.g. 919876543210)</label><input id="wn" value="${esc(db.set.wa)}"><label>Automatic sending method</label><select id="wp"><option value="cmb"${db.set.prov=='cmb'?' selected':''}>CallMeBot (free)</option><option value="green"${db.set.prov=='green'?' selected':''}>Green API (free developer plan)</option><option value="ultra"${db.set.prov=='ultra'?' selected':''}>UltraMsg</option><option value="hook"${db.set.prov=='hook'?' selected':''}>Webhook (Make / Zapier / n8n)</option></select>
 <label id="l1">CallMeBot API key</label><input id="wk" value="${esc(db.set.cmb)}"><label id="l2">Instance ID</label><input id="w1" value="${esc(db.set.p1)}"><label id="l3">Token</label><input id="w2" value="${esc(db.set.p2)}">
-<p id="wh" style="color:var(--mu);font-size:12px;margin:4px 0"></p><p><button class="btn" id="sw">Save number</button></p>${me.role=='admin'?`<hr style="border:0;border-top:1px solid var(--bd)"><b>Company logo</b><p><input type="file" id="lf" accept="image/*"></p><hr style="border:0;border-top:1px solid var(--bd)"><b>Google Sheet (tender sync)</b><label>Sheet link or ID</label><input id="sid" value="${esc(db.set.sheet)}"><label>Tab gid</label><input id="sgid" value="${esc(db.set.gid)}"><p><button class="btn" id="ss">Save &amp; sync now</button></p>`:''}<hr style="border:0;border-top:1px solid var(--bd)"><b>Backup</b><p style="color:var(--mu);margin:4px 0">Data is stored in this browser. Download a backup regularly.</p><button class="btn g" id="bk">Download backup</button> <button class="btn g" id="rs">Restore backup</button><input type="file" id="rf" accept=".json" hidden></div></div>`;
+<p id="wh" style="color:var(--mu);font-size:12px;margin:4px 0"></p><p><button class="btn" id="sw">Save number</button></p>${me.role=='admin'?`<hr style="border:0;border-top:1px solid var(--bd)"><b>Company logo</b><p><input type="file" id="lf" accept="image/*"></p><hr style="border:0;border-top:1px solid var(--bd)"><b>Google Sheet (tender sync)</b><label>Sheet link or ID</label><input id="sid" value="${esc(db.set.sheet)}"><label>Tab gid</label><input id="sgid" value="${esc(db.set.gid)}"><p><button class="btn" id="ss">Save &amp; sync now</button></p>`:''}<hr style="border:0;border-top:1px solid var(--bd)"><b>Backup</b><p style="color:var(--mu);margin:4px 0">${CLOUD_ON?'Data is stored in your secure cloud database. A backup copy is still a good idea.':'Data is stored in this browser only. Download a backup regularly.'}</p><button class="btn g" id="bk">Download backup</button> <button class="btn g" id="rs">Restore backup</button><input type="file" id="rf" accept=".json" hidden></div></div>`;
 }
 function listView(m){
  const cfg=E[m],hd=cfg.c.map(k=>({filled:'Filled?',total:'Total incl. GST',tid:'ID',pri:'Priority',who:'Assigned',due:'Due'}[k]||(cfg.f.find(f=>f[0]==k)||[0,k])[1].split(' (')[0])),ql=q.toLowerCase();
@@ -336,14 +376,14 @@ function printQuote(id){
  const x=db.quotes.find(a=>a.id==id),w=window.open('','_blank');if(!w)return;
  w.document.write(`<title>Quotation ${esc(x.no)}</title><body style="font-family:sans-serif;max-width:700px;margin:30px auto">${logo()}<h2>INTECH ENGINEERS</h2><h3>Quotation ${esc(x.no)}</h3><p>Date: ${esc(fd(x.date))}<br>To: ${esc(clientName(x.client))}</p><table border="1" cellpadding="8" style="border-collapse:collapse;width:100%"><tr><th>Description</th><th>Amount</th></tr><tr><td>${esc(x.item)}</td><td>${inr(x.amount)}</td></tr><tr><td>GST @ ${esc(x.gst)}%</td><td>${inr(quoteTotal(x)-x.amount)}</td></tr><tr><th>Total</th><th>${inr(quoteTotal(x))}</th></tr></table><script>print()<\/script>`);w.document.close();
 }
-const NAV=[['dash','📊','Dashboard'],['clients','👥','Clients'],['tenders','📑','Tenders'],['ai','🤖','AI Assistant'],['projects','🏗','Projects'],['quotes','🧾','Quotations'],['tasks','✅','Tasks'],['team','⚙','Team']];
+const NAV=[['dash','📊','Dashboard'],['clients','👥','Clients'],['tenders','📑','Tenders'],['ai','🤖','AI Assistant'],['projects','🏗','Projects'],['quotes','🧾','Quotations'],['tasks','✅','Tasks'],['team','⚙','Settings']];
 const TABS=['dash','tenders','clients','tasks'],MORE=NAV.map(n=>n[0]).filter(k=>!TABS.includes(k));
 function draw(){
  if(!me)return loginView();if(!synced){synced=1;syncSheet();setTimeout(()=>{autoRemind();remindPopup()},4000)}
  const nb=(k,i,l,c)=>`<button data-v="${k}" class="${view==k?'on':''}"><i>${i}</i>${c?'':l}${c?`<span>${l}</span>`:''}</button>`;
  R.innerHTML=`<div id="app"><nav class="side"><div class="brand">${logo(44)}</div>${NAV.map(([k,i,l])=>nb(k,i,l)).join('')}<div class="sp"></div><button data-th><i>🌓</i>Theme</button><button data-lo><i>⏻</i><span>Logout <small>(${esc(me.user)})</small></span></button></nav>
  <header class="mbar">${logo(34)}<button class="btn" data-th aria-label="Switch theme">🌓</button></header>
- <main>${view=='dash'?dash():view=='team'?team():view=='ai'?ai():listView(view)}</main>
+ <main>${banner()}${view=='dash'?dash():view=='team'?team():view=='ai'?ai():listView(view)}</main>
  <div class="tabs">${TABS.map(k=>NAV.find(n=>n[0]==k)).map(([k,i,l])=>nb(k,i,l,1)).join('')}<button data-moremenu class="${MORE.includes(view)||more?'on':''}"><i>☰</i><span>More</span></button></div>
  ${more?`<div class="sheet-bg" data-closemore></div><div class="sheet">${NAV.filter(n=>MORE.includes(n[0])).map(([k,i,l])=>nb(k,i,l)).join('')}<button data-lo><i>⏻</i>Logout (${esc(me.user)})</button></div>`:''}</div>`;
  bind();
@@ -356,15 +396,17 @@ function bind(){
  on('[data-ed]',e=>openForm(...e.dataset.ed.split('|')));
  on('[data-dl]',e=>{const[m,id]=e.dataset.dl.split('|');if(confirm('Delete this record?')){db[m]=db[m].filter(x=>x.id!=id);save();draw()}});
  on('[data-tg]',e=>{const t=db.tasks.find(x=>x.id==e.dataset.tg);t.done=!t.done;save();draw()});
- on('[data-wa]',e=>{if(!db.set.wa){alert('Set the reminder WhatsApp number under Team & Settings first.');return}wa(db.tenders.find(x=>x.id==e.dataset.wa))});
+ on('[data-wa]',e=>{if(!db.set.wa){alert('Set the reminder WhatsApp number under Settings first.');return}wa(db.tenders.find(x=>x.id==e.dataset.wa))});
  on('[data-fn]',e=>{const t=db.tenders.find(x=>x.id==e.dataset.fn);navigator.clipboard&&navigator.clipboard.writeText(folder(t)).then(()=>alert('Copied: '+folder(t)),()=>prompt('Folder name',folder(t)))});
  on('[data-pr]',e=>printQuote(e.dataset.pr));
  on('[data-ex]',e=>csv(e.dataset.ex));
  on('[data-th]',()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme=='dark'?'light':'dark'});
- on('[data-lo]',()=>{more=false;me=null;sessionStorage.removeItem('intech_me');draw()});
+ on('[data-lo]',async()=>{
+  if(CLOUD_ON&&dirty){clearTimeout(pend);await push();if(dirty&&!confirm('Some changes could not be uploaded yet. Logout anyway?'))return}
+  more=false;me=null;sess=null;synced=0;sessionStorage.removeItem('intech_sess');sessionStorage.removeItem('intech_pop');
+  if(CLOUD_ON){db=norm(null);dirty=false;base=0;cloudMsg=''}
+  draw()});
  const s=$('#sq');if(s)s.oninput=()=>{q=s.value;tshow=10;const p=s.selectionStart;draw();const n=$('#sq');n.focus();n.setSelectionRange(p,p)};
- const au=$('#au');if(au)au.onclick=async()=>{const n=$('#un').value.trim(),u=$('#uu').value.trim().toLowerCase(),p=$('#up').value;if(!n||!u||p.length<6){alert('Fill all fields; password min 6 characters.');return}if(db.users.some(x=>x.user==u)){alert('Username taken.');return}db.users.push({name:n,user:u,role:$('#ur').value,pw:await hash(p)});save();draw()};
- on('[data-du]',e=>{if(confirm('Remove user?')){db.users=db.users.filter(u=>u.user!=e.dataset.du);save();draw()}});
  const wp=$('#wp');if(wp){const up=()=>{const p=wp.value,T={cmb:['CallMeBot API key','','','Send “I allow callmebot to send me messages” to +34 644 51 95 23 on WhatsApp to get the key.'],green:['','Instance ID (idInstance)','API token (apiTokenInstance)','Sign up at green-api.com, create an instance, scan the QR with your WhatsApp, then copy the ID and token.'],ultra:['','Instance ID (e.g. instance12345)','Token','Sign up at ultramsg.com, connect your WhatsApp and copy the instance ID and token.'],hook:['','Webhook URL','','Make/Zapier/n8n webhook URL. It receives JSON: phone, message, tender, tender_id, date, time, link.']}[p];[['#wk','#l1',0],['#w1','#l2',1],['#w2','#l3',2]].forEach(([i,l,n])=>{$(i).style.display=$(l).style.display=T[n]?'':'none';if(T[n])$(l).textContent=T[n]});$('#wh').textContent=T[3]};wp.onchange=up;up()}
  const sw=$('#sw');if(sw)sw.onclick=()=>{db.set.wa=$('#wn').value.trim();db.set.cmb=$('#wk').value.trim();db.set.prov=$('#wp').value;db.set.p1=$('#w1').value.trim();db.set.p2=$('#w2').value.trim();save();alert('Saved.');autoRemind()};
  R.querySelectorAll('[data-st]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.st);t.status=e.value;t.lock=1;save();draw()});
@@ -374,30 +416,46 @@ function bind(){
  on('[data-tf]',e=>{tf=e.dataset.tf;tshow=10;draw()});on('[data-more]',e=>{const v=e.dataset.more;tshow=v=='all'?1e9:v=='less'?10:tshow+10;draw()});
  on('[data-sy]',()=>syncSheet(true));on('[data-ic]',()=>$('#icf').click());
  const icf=$('#icf');if(icf)icf.onchange=()=>{const f=icf.files[0];if(f)f.text().then(t=>syncSheet(true,csvParse(t)))};
- on('[data-rp]',async e=>{const p=prompt('New password for '+e.dataset.rp+' (6+ characters)');if(!p)return;if(p.length<6){alert('Too short.');return}db.users.find(u=>u.user==e.dataset.rp).pw=await hash(p);save();alert('Password updated.')});
  const ab=$('#ab'),aqi=$('#aq');if(ab){ab.onclick=()=>{aq=aqi.value;draw()};aqi.onkeydown=e=>{if(e.key=='Enter'){aq=aqi.value;draw()}}}
- on('[data-bw]',()=>{if(!db.set.wa){alert('Set the reminder WhatsApp number under Team & Settings first.');return}window.open('https://wa.me/'+db.set.wa.replace(/\D/g,'')+'?text='+encodeURIComponent(brief()),'_blank')});
+ on('[data-bw]',()=>{if(!db.set.wa){alert('Set the reminder WhatsApp number under Settings first.');return}window.open('https://wa.me/'+db.set.wa.replace(/\D/g,'')+'?text='+encodeURIComponent(brief()),'_blank')});
  on('[data-bc]',()=>navigator.clipboard&&navigator.clipboard.writeText(brief()).then(()=>alert('Copied.')));
  const ss=$('#ss');if(ss)ss.onclick=()=>{db.set.sheet=$('#sid').value.trim().replace(/.*\/d\/([^\/?#]+).*/,'$1');db.set.gid=$('#sgid').value.trim()||'0';save();syncSheet(true)};
  const lf=$('#lf');if(lf)lf.onchange=()=>{const f=lf.files[0];if(!f)return;const im=new Image();im.onload=()=>{const k=Math.min(1,320/im.width),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);db.set.logo=c.toDataURL('image/png');save();draw()};im.src=URL.createObjectURL(f)};
  const bk=$('#bk');if(bk)bk.onclick=()=>dl(JSON.stringify(db),'intech-crm-backup.json','application/json');
  const rs=$('#rs');if(rs)rs.onclick=()=>$('#rf').click();
- const rf=$('#rf');if(rf)rf.onchange=()=>{const f=rf.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!o.users)throw 0;db=o;save();draw()}catch(e){alert('Invalid backup file.')}})};
+ const rf=$('#rf');if(rf)rf.onchange=()=>{const f=rf.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tenders)&&!Array.isArray(o.clients))throw 0;db=norm(o);save();draw()}catch(e){alert('Invalid backup file.')}})};
 }
 function loginView(){
- const first=!db.users.length;
- R.innerHTML=`<div id="login"><div class="card lg"><div class="lgw">${logo(54)}</div><h1>Intech Engineers</h1><p>${first?'Welcome! Create the admin account to begin.':'Sign in to your CRM'}</p>${first?'<label>Your name</label><input id="n">':''}<label>Username</label><input id="u" autocomplete="username"><label>Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="e"></div><button class="btn" id="go" style="width:100%">${first?'Create admin &amp; enter':'Sign in'}</button></div></div>`;
+ R.innerHTML=`<div id="login"><div class="card lg"><div class="lgw">${logo(54)}</div><h1>Intech Engineers</h1><p>Sign in to your CRM</p><label>Username</label><input id="u" autocomplete="username" autocapitalize="none"><label>Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="e">${esc(loginMsg)}</div><button class="btn" id="go" style="width:100%">Sign in</button></div></div>`;loginMsg='';
  const go=async()=>{
-  const u=$('#u').value.trim().toLowerCase(),p=$('#p').value,e=$('#e');
+  const e=$('#e'),b=$('#go'),u=$('#u').value.trim().toLowerCase().replace(/\s+/g,' '),p=$('#p').value;
+  if(Date.now()<lock){e.textContent='Too many attempts. Wait '+Math.ceil((lock-Date.now())/1000)+' seconds.';return}
   if(!u||!p){e.textContent='Enter username and password.';return}
-  if(!crypto.subtle){e.textContent='Secure context required.';return}
-  const h=await hash(p);
-  if(first){if(p.length<6){e.textContent='Password must be 6+ characters.';return}db.users.push({name:$('#n').value||u,user:u,role:'admin',pw:h});save();me={user:u,role:'admin',name:u}}
-  else{const f=db.users.find(x=>x.user==u&&x.pw==h);if(!f){e.textContent='Wrong username or password.';return}me={user:f.user,role:f.role,name:f.name}}
-  sessionStorage.setItem('intech_me',JSON.stringify(me));draw();
+  if(!crypto.subtle){e.textContent='Secure (https) connection required.';return}
+  b.disabled=true;e.textContent='';
+  const bad=m=>{fails++;if(fails>=5){lock=Date.now()+30000;fails=0}e.textContent=m||'Wrong username or password.';b.disabled=false};
+  try{
+   if(u!=OWNER)return bad();
+   if(CLOUD_ON){
+    let j;try{j=await jf('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+CLOUD.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:CLOUD.email,password:p,returnSecureToken:true})})}
+    catch(x){return /INVALID_PASSWORD|INVALID_LOGIN_CREDENTIALS/.test(x.message)?bad():(e.textContent='Cloud login error: '+x.message,void(b.disabled=false))}
+    sess={u:OWNER,idToken:j.idToken,refreshToken:j.refreshToken,exp:Date.now()+(+j.expiresIn)*1000};
+    try{await pull(true)}catch(x){sess=null;e.textContent='Could not load data: '+x.message;b.disabled=false;return}
+   }else{
+    if(await hash(p)!=PWH)return bad();
+    sess={u:OWNER,t:PWH};
+   }
+   fails=0;me={user:OWNER,role:'admin',name:'Intech Engineers'};sessionStorage.setItem('intech_sess',JSON.stringify(sess));synced=0;draw();
+  }catch(x){e.textContent='Error: '+(x&&x.message||x);b.disabled=false}
  };
- $('#go').onclick=go;$('#p').onkeydown=e=>{if(e.key=='Enter')go()};
+ $('#go').onclick=go;$('#p').onkeydown=e=>{if(e.key=='Enter')go()};$('#u').onkeydown=e=>{if(e.key=='Enter')go()};
 }
+async function boot(){
+ if(me&&CLOUD_ON){R.innerHTML='<p style="padding:40px;text-align:center;color:var(--mu)">Loading…</p>';try{await pull(true)}catch(e){me=null;sess=null;sessionStorage.removeItem('intech_sess');loginMsg='Session expired. Please sign in again.'}}
+ draw()}
+const poll=async()=>{if(me&&CLOUD_ON&&!dirty&&!pushing){try{if(await pull(false))redraw()}catch(e){}}};
 setInterval(()=>{if(me){syncSheet();autoRemind()}},120000);
-draw();
+setInterval(poll,15000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()});
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+boot();
 </script></body></html>
