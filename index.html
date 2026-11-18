@@ -273,7 +273,7 @@ const quoteTotal=x=>qCalc(x).tot;
 const clientOpts=()=>db.clients.map(c=>[c.id,c.name]);
 const E={
 clients:{t:'Clients & Leads',f:[['name','Company / Name','text'],['contact','Contact person','text'],['phone','Phone (with country code)','text'],['email','Email','text'],['city','City','text'],['status','Stage','select',['Lead','Contacted','Negotiation','Active','Inactive']],['notes','Notes','textarea']],c:['name','contact','phone','city','status']},
-tenders:{t:'Tenders',f:[['name','Tender name','text'],['tid','Tender ID','text'],['client','Client / Department','select',clientOpts],['date','Tender date','date'],['time','Time','time'],['value','Estimated value (₹)','number'],['status','Tender status','select',['Identified','Preparing','Submitted','Closed']],['award','Award status','select',['Pending','Won','Lost','Cancelled']],['owner','Assigned to','text'],['link','Drive link','url'],['notes','Description','textarea']],c:['tid','name','date','filled','award','owner','value']},
+tenders:{t:'Tenders',f:[['name','Tender name','text'],['tid','Tender ID','text'],['client','Client / Department','select',clientOpts],['date','Tender date','date'],['time','Time','time'],['value','Estimated cost / rate (₹)','number'],['status','Tender status','select',['Identified','Preparing','Submitted','Closed']],['award','Award status','select',['Pending','Won','Lost','Cancelled']],['owner','Assigned to','text'],['link','Drive link','url'],['notes','Description','textarea']],c:['tid','name','date','filled','award','owner','value']},
 projects:{t:'Projects',f:[['name','Project name','text'],['client','Client','select',clientOpts],['budget','Budget (₹)','number'],['progress','Progress %','number'],['deadline','Deadline','date'],['status','Status','select',['Planning','Running','On hold','Completed']]],c:['name','client','budget','progress','deadline','status']},
 tasks:{t:'Tasks',f:[['title','Task','text'],['who','Assigned to','text'],['due','Due date','date'],['pri','Priority','select',['High','Medium','Low']],['done','Done','check']],c:['title','who','due','pri','done']},
 quotes:{t:'Quotations',f:[['no','Quote no.','text'],['client','Client','select',clientOpts],['item','Description','text'],['amount','Amount before tax (₹)','number'],['gst','GST %','number'],['date','Date','date'],['status','Status','select',['Draft','Sent','Accepted','Rejected','Paid']]],c:['no','client','item','amount','total','status']}
@@ -370,7 +370,8 @@ async function syncSheet(manual,rowsIn){
  const s=db.set;if(!s.sheet||syncing)return;syncing=true;
  try{
   const rows=rowsIn||await loadRows(),H=rows[0].map(x=>x.trim().toUpperCase()),ix=n=>H.indexOf(n);
-  const iD=ix('TENDER DATE'),iN=ix('TENDER NAME'),iL=ix('DRIVE LINK'),iS=ix('TENDER STATUS'),iA=ix('AWARD STATUS'),iI=ix('TENDER ID');
+  const iD=ix('TENDER DATE'),iN=ix('TENDER NAME'),iL=ix('DRIVE LINK'),iS=ix('TENDER STATUS'),iA=ix('AWARD STATUS'),iI=ix('TENDER ID'),iV=['ESTIMATED COST','ESTIMATED RATE','ESTIMATED VALUE','ESTIMATED AMOUNT','ESTIMATED'].map(ix).find(i=>i>=0)??-1;
+  const money=v=>{v=String(v||'').toLowerCase();const n=parseFloat(v.replace(/[^0-9.]/g,''));return n?Math.round(n*(/cr/.test(v)?1e7:/lakh|lac/.test(v)?1e5:1)):''};
   if(iD<0||iN<0)throw 1;
   let add=0,upd=0,del=0;const seen=new Set();
   rows.slice(1).forEach(c=>{
@@ -381,8 +382,8 @@ async function syncSheet(manual,rowsIn){
    const award=/^won/i.test(aw)?'Won':/^lost/i.test(aw)?'Lost':/cancel/i.test(aw)?'Cancelled':'Pending';
    const tid=(c[iI]||'').trim(),link=(c[iL]||'').trim();
    let t=db.tenders.find(x=>x.sk==key);
-   if(!t){db.tenders.push({id:uid(),sk:key,name,date,link,status:st,award,tid:/not found/i.test(tid)?'':tid});add++;return}
-   const n={link:link||t.link,status:(t.status=='Closed'||t.lock)?t.status:st,award:t.lockA?t.award:(award!='Pending'?award:t.award),tid:tid&&!/not found/i.test(tid)?tid:t.tid};
+   if(!t){db.tenders.push({id:uid(),sk:key,name,date,link,status:st,award,tid:/not found/i.test(tid)?'':tid,value:iV>=0?money(c[iV]):''});add++;return}
+   const n={link:link||t.link,status:(t.status=='Closed'||t.lock)?t.status:st,award:t.lockA?t.award:(award!='Pending'?award:t.award),tid:tid&&!/not found/i.test(tid)?tid:t.tid,value:iV>=0?money(c[iV]):t.value};
    if(Object.keys(n).some(k=>n[k]!==t[k])){Object.assign(t,n);upd++}
   });
   if(!rowsIn&&seen.size){const before=db.tenders.length;db.tenders=db.tenders.filter(t=>!t.sk||seen.has(t.sk));del=before-db.tenders.length}/* removed from sheet -> removed from CRM (sheet-synced tenders only; manual ones are kept) */
