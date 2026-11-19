@@ -153,6 +153,8 @@ label.tk{display:flex;gap:9px;align-items:flex-start;font-weight:400;color:var(-
 .pki img{height:50px;max-width:90px;object-fit:contain;background:#fff;border-radius:4px}
 .pki input{width:18px;height:18px;min-height:0;padding:0}.pki span{font-size:12px;text-align:center;word-break:break-word;line-height:1.25}
 .pki:has(input:checked){border-color:var(--ac);background:var(--hv);box-shadow:0 0 0 1px var(--ac)}
+
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0f1722;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:opacity .25s;box-shadow:0 8px 24px #0006;max-width:90vw;pointer-events:none}#toast.bad{background:#b42318}
 </style></head><body>
 <div id="root"></div><dialog id="dlg"></dialog>
 <script>
@@ -308,10 +310,10 @@ function openForm(m,id){
  if(m=='tenders'){D.addEventListener('input',fn);fn()}
  $('#cx').onclick=()=>D.close();
  $('#sv').onclick=()=>{
-  const o=r.id?r:{id:uid()};
+  const o=r.id?r:{id:uid()},ps=o.status,pa=o.award;
   cfg.f.forEach(([k,,t])=>{const e=$('#f_'+k);o[k]=t=='check'?e.checked:e.value});
   if(!o[cfg.f[0][0]]){alert('Please fill the first field.');return}
-  if(m=='tenders'&&r.id)o.lock=1;if(!r.id)db[m].push(o);save();D.close();draw()};
+  if(m=='tenders'&&r.id){o.lock=1;delete o.lu;delete o.lua}if(!r.id)db[m].push(o);save();D.close();draw();if(m=='tenders'&&r.id){if(o.status!=ps)pushSheet(o,'status');if(o.award!=pa)pushSheet(o,'award')}};
 }
 const remMsg=t=>`⏰ *Tender Reminder – Intech Engineers*\n\nYou have a tender on *${fd(t.date)}${t.time?' at '+t.time:''}*.\nKindly fill it on time.\n\nTender: ${t.name}\nID: ${t.tid||'—'}${t.notes?'\nDetails: '+t.notes:''}${t.link?'\nFolder: '+t.link:''}`;
 function wa(t){window.open('https://wa.me/'+(db.set.wa||'').replace(/\D/g,'')+'?text='+encodeURIComponent(remMsg(t)),'_blank')}
@@ -366,6 +368,22 @@ async function loadRows(){
  try{return gvRows(await jsonp(base+'&_='+Date.now()))}
  catch(e1){try{const r=await fetch(base+'&tqx=out:csv&_='+Date.now());if(!r.ok)throw 0;return csvParse(await r.text())}catch(e2){throw new Error(e1)}}
 }
+/* ---------- CRM -> Google Sheet write-back (Apps Script) ---------- */
+function toast(m,bad){let e=$('#toast');if(!e){e=document.createElement('div');e.id='toast';document.body.appendChild(e)}e.textContent=m;e.className=bad?'bad':'';e.style.opacity=1;clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.opacity=0,bad?7000:2500)}
+const sheetOn=t=>!!(db.set.gas&&db.set.gtok&&t&&t.sk);
+function gasCall(p){return new Promise((ok,no)=>{const cb='gas'+Date.now()+Math.floor(Math.random()*1e4),sc=document.createElement('script');
+ const cl=()=>{clearTimeout(tm);delete window[cb];sc.remove()},tm=setTimeout(()=>{cl();no(new Error('no response from Google — check the web app URL and that access is set to Anyone'))},20000);
+ window[cb]=d=>{cl();d&&d.ok?ok(d):no(new Error((d&&d.error)||'unknown error'))};
+ sc.onerror=()=>{cl();no(new Error('could not reach the web app URL'))};
+ const q=new URLSearchParams({...p,token:db.set.gtok,gid:db.set.gid||'0',callback:cb});
+ sc.src=db.set.gas+(db.set.gas.includes('?')?'&':'?')+q;document.head.appendChild(sc)})}
+async function pushSheet(t,f){
+ if(!sheetOn(t))return;
+ const val=f=='status'?(t.status=='Submitted'?'Filled':t.status=='Closed'?null:'Not Filled'):({Won:'Won',Lost:'Lost',Cancelled:'Cancelled'}[t.award]||'Not Awarded');
+ if(val===null)return;
+ try{await gasCall({action:'set',field:f,value:val,date:t.sk.slice(0,10),name:t.sk.slice(11)});toast('✔ Google Sheet updated');
+  if(f=='award')t.lua=Date.now()+6e5;else if(t.status!='Preparing')t.lu=Date.now()+6e5;save()}
+ catch(e){toast('Google Sheet not updated: '+e.message,1)}}
 async function syncSheet(manual,rowsIn){
  const s=db.set;if(!s.sheet||syncing)return;syncing=true;
  try{
@@ -383,7 +401,7 @@ async function syncSheet(manual,rowsIn){
    const tid=(c[iI]||'').trim(),link=(c[iL]||'').trim();
    let t=db.tenders.find(x=>x.sk==key);
    if(!t){db.tenders.push({id:uid(),sk:key,name,date,link,status:st,award,tid:/not found/i.test(tid)?'':tid,value:iV>=0?money(c[iV]):''});add++;return}
-   const n={link:link||t.link,status:(t.status=='Closed'||t.lock)?t.status:st,award:t.lockA?t.award:(award!='Pending'?award:t.award),tid:tid&&!/not found/i.test(tid)?tid:t.tid,value:iV>=0?money(c[iV]):t.value};
+   const n={link:link||t.link,status:(t.status=='Closed'||(t.lock&&!(t.lu&&Date.now()>t.lu)))?t.status:st,award:(t.lockA&&!(t.lua&&Date.now()>t.lua))?t.award:((award!='Pending'||s.gas)?award:t.award),tid:tid&&!/not found/i.test(tid)?tid:t.tid,value:iV>=0?money(c[iV]):t.value};
    if(Object.keys(n).some(k=>n[k]!==t[k])){Object.assign(t,n);upd++}
   });
   if(!rowsIn&&seen.size){const before=db.tenders.length;db.tenders=db.tenders.filter(t=>!t.sk||seen.has(t.sk));del=before-db.tenders.length}/* removed from sheet -> removed from CRM (sheet-synced tenders only; manual ones are kept) */
@@ -446,7 +464,7 @@ function team(){
  return `<div class="top"><h2>Settings</h2></div><div class="row2"><div class="card"><b>Account</b><p style="margin:8px 0">Signed in as <b>${esc(me.user)}</b></p><p style="color:var(--mu);margin:4px 0">${CLOUD_ON?'☁ Cloud database connected — your data is available from any browser after login.':'⚠ Cloud database not connected — data is stored only in this browser.'}</p></div>
  <div class="card"><b>Reminder WhatsApp number</b><label>Number with country code (e.g. 919876543210)</label><input id="wn" value="${esc(db.set.wa)}"><label>Automatic sending method</label><select id="wp"><option value="cmb"${db.set.prov=='cmb'?' selected':''}>CallMeBot (free)</option><option value="green"${db.set.prov=='green'?' selected':''}>Green API (free developer plan)</option><option value="ultra"${db.set.prov=='ultra'?' selected':''}>UltraMsg</option><option value="hook"${db.set.prov=='hook'?' selected':''}>Webhook (Make / Zapier / n8n)</option></select>
 <label id="l1">CallMeBot API key</label><input id="wk" value="${esc(db.set.cmb)}"><label id="l2">Instance ID</label><input id="w1" value="${esc(db.set.p1)}"><label id="l3">Token</label><input id="w2" value="${esc(db.set.p2)}">
-<p id="wh" style="color:var(--mu);font-size:12px;margin:4px 0"></p><p><button class="btn" id="sw">Save number</button></p>${me.role=='admin'?`<hr style="border:0;border-top:1px solid var(--bd)"><b>Company logo</b><p><input type="file" id="lf" accept="image/*"></p><hr style="border:0;border-top:1px solid var(--bd)"><b>Google Sheet (tender sync)</b><label>Sheet link or ID</label><input id="sid" value="${esc(db.set.sheet)}"><label>Tab gid</label><input id="sgid" value="${esc(db.set.gid)}"><p><button class="btn" id="ss">Save &amp; sync now</button></p>`:''}<hr style="border:0;border-top:1px solid var(--bd)"><b>Backup</b><p style="color:var(--mu);margin:4px 0">${CLOUD_ON?'Data is stored in your secure cloud database. A backup copy is still a good idea.':'Data is stored in this browser only. Download a backup regularly.'}</p><button class="btn g" id="bk">Download backup</button> <button class="btn g" id="rs">Restore backup</button><input type="file" id="rf" accept=".json" hidden></div></div>`;
+<p id="wh" style="color:var(--mu);font-size:12px;margin:4px 0"></p><p><button class="btn" id="sw">Save number</button></p>${me.role=='admin'?`<hr style="border:0;border-top:1px solid var(--bd)"><b>Company logo</b><p><input type="file" id="lf" accept="image/*"></p><hr style="border:0;border-top:1px solid var(--bd)"><b>Google Sheet (tender sync)</b><label>Sheet link or ID</label><input id="sid" value="${esc(db.set.sheet)}"><label>Tab gid</label><input id="sgid" value="${esc(db.set.gid)}"><p><button class="btn" id="ss">Save &amp; sync now</button></p><hr style="border:0;border-top:1px solid var(--bd)"><b>Send changes back to the Sheet (optional)</b><p style="color:var(--mu);margin:4px 0;font-size:12.5px">When you change Filled / Award status here, the same change is written to the Google Sheet. Needs the small Apps Script (steps provided separately).</p><label>Apps Script web app URL</label><input id="gurl" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(db.set.gas||'')}"><label>Secret word</label><input id="gtok" type="password" autocomplete="off" value="${esc(db.set.gtok||'')}"><p><button class="btn" id="gs">Save &amp; test connection</button></p>`:''}<hr style="border:0;border-top:1px solid var(--bd)"><b>Backup</b><p style="color:var(--mu);margin:4px 0">${CLOUD_ON?'Data is stored in your secure cloud database. A backup copy is still a good idea.':'Data is stored in this browser only. Download a backup regularly.'}</p><button class="btn g" id="bk">Download backup</button> <button class="btn g" id="rs">Restore backup</button><input type="file" id="rf" accept=".json" hidden></div></div>`;
 }
 function listView(m){
  const cfg=E[m],hd=cfg.c.map(k=>({filled:'Filled?',total:'Total incl. GST',tid:'ID',pri:'Priority',who:'Assigned',due:'Due'}[k]||(cfg.f.find(f=>f[0]==k)||[0,k])[1].split(' (')[0])),ql=q.toLowerCase();
@@ -664,8 +682,8 @@ function bind(){
  const s=$('#sq');if(s)s.oninput=()=>{q=s.value;tshow=10;const p=s.selectionStart;draw();const n=$('#sq');n.focus();n.setSelectionRange(p,p)};
  const wp=$('#wp');if(wp){const up=()=>{const p=wp.value,T={cmb:['CallMeBot API key','','','Send “I allow callmebot to send me messages” to +34 644 51 95 23 on WhatsApp to get the key.'],green:['','Instance ID (idInstance)','API token (apiTokenInstance)','Sign up at green-api.com, create an instance, scan the QR with your WhatsApp, then copy the ID and token.'],ultra:['','Instance ID (e.g. instance12345)','Token','Sign up at ultramsg.com, connect your WhatsApp and copy the instance ID and token.'],hook:['','Webhook URL','','Make/Zapier/n8n webhook URL. It receives JSON: phone, message, tender, tender_id, date, time, link.']}[p];[['#wk','#l1',0],['#w1','#l2',1],['#w2','#l3',2]].forEach(([i,l,n])=>{$(i).style.display=$(l).style.display=T[n]?'':'none';if(T[n])$(l).textContent=T[n]});$('#wh').textContent=T[3]};wp.onchange=up;up()}
  const sw=$('#sw');if(sw)sw.onclick=()=>{db.set.wa=$('#wn').value.trim();db.set.cmb=$('#wk').value.trim();db.set.prov=$('#wp').value;db.set.p1=$('#w1').value.trim();db.set.p2=$('#w2').value.trim();save();alert('Saved.');autoRemind()};
- R.querySelectorAll('[data-st]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.st);t.status=e.value;t.lock=1;save();draw()});
- R.querySelectorAll('[data-aw]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.aw);t.award=e.value;t.lockA=1;save();draw()});
+ R.querySelectorAll('[data-st]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.st);t.status=e.value;t.lock=1;delete t.lu;save();draw();pushSheet(t,'status')});
+ R.querySelectorAll('[data-aw]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.aw);t.award=e.value;t.lockA=1;delete t.lua;save();draw();pushSheet(t,'award')});
  on('[data-clr]',()=>{tf='all';af='';auf='';tshow=10;draw()});
  R.querySelectorAll('[data-sel]').forEach(e=>e.onchange=()=>{e.dataset.sel=='af'?af=e.value:auf=e.value;tshow=10;draw()});
  on('[data-tf]',e=>{tf=e.dataset.tf;tshow=10;draw()});on('[data-more]',e=>{const v=e.dataset.more;tshow=v=='all'?1e9:v=='less'?10:tshow+10;draw()});
@@ -674,7 +692,8 @@ function bind(){
  const ab=$('#ab'),aqi=$('#aq');if(ab){ab.onclick=()=>{aq=aqi.value;draw()};aqi.onkeydown=e=>{if(e.key=='Enter'){aq=aqi.value;draw()}}}
  on('[data-bw]',()=>{if(!db.set.wa){alert('Set the reminder WhatsApp number under Settings first.');return}window.open('https://wa.me/'+db.set.wa.replace(/\D/g,'')+'?text='+encodeURIComponent(brief()),'_blank')});
  on('[data-bc]',()=>navigator.clipboard&&navigator.clipboard.writeText(brief()).then(()=>alert('Copied.')));
- const ss=$('#ss');if(ss)ss.onclick=()=>{db.set.sheet=$('#sid').value.trim().replace(/.*\/d\/([^\/?#]+).*/,'$1');db.set.gid=$('#sgid').value.trim()||'0';save();syncSheet(true)};
+ const ss=$('#ss');if(ss)ss.onclick=()=>{db.set.sheet=$('#sid').value.trim().replace(/.*\/d\/([^\/?#]+).*/,'$1');db.set.gid=$('#sgid').value.trim()||'0';db.set.gas=$('#gurl').value.trim();db.set.gtok=$('#gtok').value.trim();save();syncSheet(true)};
+ const gs=$('#gs');if(gs)gs.onclick=async()=>{db.set.sheet=$('#sid').value.trim().replace(/.*\/d\/([^\/?#]+).*/,'$1');db.set.gid=$('#sgid').value.trim()||'0';db.set.gas=$('#gurl').value.trim();db.set.gtok=$('#gtok').value.trim();save();if(!db.set.gas||!db.set.gtok){toast('Enter both the URL and the secret word.',1);return}gs.disabled=true;try{await gasCall({action:'ping'});toast('✔ Connected — changes will now be written to your Google Sheet')}catch(e){toast('Connection failed: '+e.message,1)}gs.disabled=false};
  const lf=$('#lf');if(lf)lf.onchange=()=>{const f=lf.files[0];if(!f)return;const im=new Image();im.onload=()=>{const k=Math.min(1,320/im.width),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);db.set.logo=c.toDataURL('image/png');save();draw()};im.src=URL.createObjectURL(f)};
  const bk=$('#bk');if(bk)bk.onclick=()=>dl(JSON.stringify(db),'intech-crm-backup.json','application/json');
  const rs=$('#rs');if(rs)rs.onclick=()=>$('#rf').click();
