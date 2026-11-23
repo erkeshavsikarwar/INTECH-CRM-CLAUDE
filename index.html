@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="Intech CRM">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap">
 <style>
 :root{--bg:#eef1f6;--sf:#fff;--tx:#142033;--mu:#5b677a;--bd:#dde2ea;--ac:#1d4ed8;--ac2:#fff;--ok:#15803d;--wa:#b45309;--bad:#b91c1c;--nav:#0f1722;--hv:#f5f7fb;color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1117;--sf:#161c26;--tx:#e6eaf1;--mu:#93a0b4;--bd:#263042;--ac:#5b8def;--ac2:#07122b;--ok:#4ade80;--wa:#fbbf24;--bad:#f87171;--nav:#0a0f16;--hv:#1b2330;color-scheme:dark}}
@@ -160,6 +161,46 @@ label.tk{display:flex;gap:9px;align-items:flex-start;font-weight:400;color:var(-
 .th{height:34px;width:46px;object-fit:cover;border-radius:5px;margin-right:4px;cursor:pointer;vertical-align:middle}
 #lbx{position:fixed;inset:0;background:#000d;z-index:10000;display:grid;place-items:center;cursor:zoom-out}#lbx img{max-width:94vw;max-height:90vh;border-radius:8px}
 dialog#dlg .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+
+/* ===== civil / survey theme ===== */
+:root{--bl:#0e5a8a;--tl:#14808a;--yl:#f2b705;--bg:#e8ebe4;--sf:#fcfcf8;--tx:#13202c;--mu:#56646f;--bd:#cdd3c9;--ac:#d9480f;--ac2:#fff;--ok:#2b7a3d;--wa:#a86b00;--bad:#c0332b;--nav:#0a2540;--hv:#edf0e8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bl:#5aa9e6;--tl:#3cc0c8;--bg:#0a1a2c;--sf:#102740;--tx:#e3edf6;--mu:#8ea5bb;--bd:#23415f;--ac:#ff8a3d;--ac2:#1d0e03;--ok:#5fd085;--wa:#f2b705;--bad:#ff7b6e;--nav:#06172a;--hv:#15324f}}
+:root[data-theme="dark"]{--bl:#5aa9e6;--tl:#3cc0c8;--bg:#0a1a2c;--sf:#102740;--tx:#e3edf6;--mu:#8ea5bb;--bd:#23415f;--ac:#ff8a3d;--ac2:#1d0e03;--ok:#5fd085;--wa:#f2b705;--bad:#ff7b6e;--nav:#06172a;--hv:#15324f}
+body{font-family:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:15.5px;background-image:linear-gradient(color-mix(in srgb,var(--bl) 8%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--bl) 8%,transparent) 1px,transparent 1px);background-size:24px 24px}
+.top h2,main h3,.card>b,.lg h1,.hero h3{font-family:"Barlow Condensed","Barlow",system-ui,sans-serif;letter-spacing:.01em}
+.top h2{font-size:30px;font-weight:700;padding-left:12px;border-left:5px solid var(--yl)}
+.card>b{font-size:17px;font-weight:700}
+main{position:relative}
+main::before{content:"";position:absolute;top:0;right:0;width:520px;height:260px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 260' fill='none' stroke='%234f8fbf' stroke-opacity='.3'%3E%3Cpath d='M520 20C430 30 400 90 330 100S210 70 170 120 200 230 260 260'/%3E%3Cpath d='M520 50C445 58 420 108 352 118S240 92 205 134 228 232 280 260'/%3E%3Cpath d='M520 80C460 86 440 126 376 136S270 114 240 148 256 234 300 260'/%3E%3Cpath d='M520 110C478 114 462 144 402 154S300 138 276 164 286 236 322 260'/%3E%3Cpath d='M520 140C494 142 484 162 440 172S346 164 328 184 334 240 356 260'/%3E%3C/svg%3E") right top/contain no-repeat;pointer-events:none;z-index:-1}
+nav.side{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 260' fill='none' stroke='%234f8fbf' stroke-opacity='.3'%3E%3Cpath d='M520 20C430 30 400 90 330 100S210 70 170 120 200 230 260 260'/%3E%3Cpath d='M520 50C445 58 420 108 352 118S240 92 205 134 228 232 280 260'/%3E%3Cpath d='M520 80C460 86 440 126 376 136S270 114 240 148 256 234 300 260'/%3E%3Cpath d='M520 110C478 114 462 144 402 154S300 138 276 164 286 236 322 260'/%3E%3Cpath d='M520 140C494 142 484 162 440 172S346 164 328 184 334 240 356 260'/%3E%3C/svg%3E") right bottom/270px auto no-repeat,linear-gradient(180deg,#0a2540,#06172a);border-right:3px solid var(--yl)}
+nav.side button.on{background:rgba(242,183,5,.16);box-shadow:inset 4px 0 0 var(--yl)}
+.mbar{border-bottom:3px solid var(--yl)}
+.btn{border-radius:3px;text-transform:none}.btn.g{border-color:color-mix(in srgb,var(--bl) 40%,var(--bd))}
+input,select,textarea{border-radius:3px}
+.card{border-radius:4px;border-color:color-mix(in srgb,var(--bl) 22%,var(--bd));background:linear-gradient(var(--bl),var(--bl)) left top/12px 2px no-repeat,linear-gradient(var(--bl),var(--bl)) left top/2px 12px no-repeat,linear-gradient(var(--bl),var(--bl)) right bottom/12px 2px no-repeat,linear-gradient(var(--bl),var(--bl)) right bottom/2px 12px no-repeat,var(--sf)}
+.stat{border-top:4px solid var(--k,var(--ac))}
+.grid .stat:nth-child(4n+1){--k:var(--ac)}.grid .stat:nth-child(4n+2){--k:var(--bl)}.grid .stat:nth-child(4n+3){--k:var(--tl)}.grid .stat:nth-child(4n){--k:var(--yl)}
+.stat b{font-family:"Barlow Condensed",sans-serif;font-size:32px;font-weight:700}
+th{background:var(--hv);border-bottom:2px solid var(--bl);color:var(--tx);font-family:"Barlow Condensed",sans-serif;font-size:14px;letter-spacing:.04em}
+.tag{border-radius:3px}
+.tag[class*=" s-"]{background:color-mix(in srgb,currentColor 12%,transparent);border-color:color-mix(in srgb,currentColor 38%,transparent);font-weight:600}
+.s-running,.s-active,.s-completed,.s-accepted,.s-paid,.s-low{color:var(--ok)}
+.s-planning,.s-contacted,.s-sent,.s-draft,.s-lead,.s-medium{color:var(--bl)}
+.s-negotiation,.s-on-hold,.s-inactive{color:var(--wa)}
+.s-high,.s-rejected{color:var(--bad)}
+.bar{height:10px;border-radius:2px;background:repeating-linear-gradient(90deg,transparent 0 9px,rgba(255,255,255,.4) 9px 16px) center/100% 2px no-repeat,#2b3a4a}
+.bar i{border-radius:2px;background:linear-gradient(90deg,var(--yl),#e8590c)}
+.al{border-left-color:var(--yl);border-radius:3px}
+dialog{border-radius:6px;border-top:4px solid var(--yl)}
+.hero{position:relative;overflow:hidden;min-height:156px;margin-bottom:16px;padding:22px 24px 44px;border-radius:4px;color:#fff;border-bottom:4px solid var(--yl);background:repeating-linear-gradient(0deg,rgba(255,255,255,.07) 0 1px,transparent 1px 24px),repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 1px,transparent 1px 24px),linear-gradient(120deg,#0a2540,#0e4a7a 70%,#14808a)}
+.hero>svg:first-child{position:absolute;right:56px;bottom:14px;height:82%;width:auto;max-width:70%}
+.hero .ht{position:relative;max-width:46%}.hero h3{margin:0;font-size:36px;font-weight:700;line-height:1.1}.hero p{margin:6px 0 0;color:#d4e4f2}
+.hero .na{position:absolute;top:12px;right:14px;width:34px}
+.hero .chn{position:absolute;left:0;right:0;bottom:0;height:16px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.75) 0 1px,transparent 1px 10px) bottom/100% 7px no-repeat,repeating-linear-gradient(90deg,var(--yl) 0 2px,transparent 2px 100px) bottom/100% 15px no-repeat}
+.res{display:grid;gap:6px;margin-top:12px;padding:10px 12px;background:var(--hv);border-left:4px solid var(--ac)}.res div{display:flex;justify-content:space-between;gap:10px}.res b{font-variant-numeric:tabular-nums}
+.lg{border-top:5px solid var(--yl);border-radius:4px}.lg h1{font-size:32px;font-weight:700}
+#login::after{background:linear-gradient(180deg,rgba(6,23,42,.55),rgba(6,23,42,.88)),repeating-linear-gradient(0deg,rgba(90,169,230,.13) 0 1px,transparent 1px 28px),repeating-linear-gradient(90deg,rgba(90,169,230,.13) 0 1px,transparent 1px 28px)}
+@media(max-width:900px){.hero{padding:18px 16px 40px}.hero .ht{max-width:100%}.hero>svg:first-child{opacity:.28;right:8px}.hero h3{font-size:28px}.top h2{font-size:25px}main::before{width:300px}.stat b{font-size:26px}}
 </style></head><body>
 <div id="root"></div><dialog id="dlg"></dialog>
 <script>
@@ -308,7 +349,7 @@ function cell(k,r,m){
  if(k=='progress')return `<div class="bar"><i style="width:${Math.min(100,v||0)}%"></i></div><small>${v||0}%</small>`;
  if(k=='done')return v?'<span class="ok">✔</span>':'—';
  if(k=='award')return `<select data-aw="${r.id}" style="width:auto;min-width:110px;padding:4px 8px;color:${v=='Won'?'var(--ok)':v=='Lost'?'var(--bad)':'inherit'}">${['Pending','Won','Lost','Cancelled'].map(x=>`<option ${(v||'Pending')==x?'selected':''}>${x}</option>`).join('')}</select>`;
- if(k=='status'||k=='pri')return `<span class="tag">${esc(v)}</span>`;
+ if(k=='status'||k=='pri')return `<span class="tag s-${String(v||'').toLowerCase().replace(/\W+/g,'-')}">${esc(v)}</span>`;
  return esc(v);
 }
 function openForm(m,id){
@@ -475,7 +516,7 @@ function dash(){
  const stats=[['Clients & leads',db.clients.length],['Open tenders',open.length],['Tender pipeline',inr(open.reduce((s,t)=>s+Number(t.value||0),0))],['Tender win rate',dec.length?Math.round(won.length/dec.length*100)+'%':'—'],['Running projects',db.projects.filter(p=>p.status=='Running').length],['Pending tasks',db.tasks.filter(t=>!t.done).length],['Quotes outstanding',inr(db.quotes.filter(x=>['Sent','Accepted'].includes(x.status)).reduce((s,x)=>s+quoteTotal(x),0))],...xStats()];
  const stages=['Lead','Contacted','Negotiation','Active','Inactive'],mx=Math.max(1,...stages.map(s=>db.clients.filter(c=>c.status==s).length));
  const al=dueTenders();
- return `<div class="top"><h2>Dashboard</h2></div>
+ return `<div class="top"><h2>Dashboard</h2></div>${hero(open)}
  ${al.length?`<h3 style="margin:0 0 8px">⏰ Tender reminders (next 2 days)</h3>`+al.map(t=>`<div class="al"><div><b>${esc(t.name)}</b><br><small>${esc(fd(t.date))} ${esc(t.time)} · ${dleft(t.date)?'in '+dleft(t.date)+' days':'<b class="bad">TODAY</b>'} · ${esc(clientName(t.client))}</small></div><button class="btn s" data-wa="${t.id}">Send on WhatsApp</button></div>`).join(''):'<div class="card" style="margin-bottom:14px">No tenders due in the next 2 days.</div>'}
  ${xDash()}<div class="grid">${stats.map(s=>`<div class="card stat"><small>${s[0]}</small><b>${s[1]}</b></div>`).join('')}</div>
  <div class="row2"><div class="card"><b>Client pipeline</b>${stages.map(s=>{const n=db.clients.filter(c=>c.status==s).length;return `<div style="margin-top:8px"><small>${s} · ${n}</small><div class="bar"><i style="width:${n/mx*100}%"></i></div></div>`}).join('')}</div>
@@ -838,14 +879,42 @@ function invView(){
  if(qv=='edit'&&qe&&qe.k=='i')return qEdit();if(qv=='setup')return qSetup();
  return listView('invoices').replace('<button class="btn" data-add="invoices">','<button class="btn g" data-qs>⚙ Invoice setup</button><button class="btn" data-add="invoices">')}
 
-const NAV=[['dash','📊','Dashboard'],['clients','👥','Clients'],['tenders','📑','Tenders'],['ai','🤖','AI Assistant'],['projects','🏗','Projects'],['quotes','🧾','Quotations'],['invoices','💰','Invoices'],['logs','📷','Field log'],['reports','📈','Reports'],['tasks','✅','Tasks'],['team','⚙','Settings']];
+
+const SKY=`<svg viewBox="0 0 620 150" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M0 128H620" stroke="#fff" stroke-opacity=".5"/><g stroke="#fff" stroke-opacity=".55" stroke-width="1.5"><path d="M20 100H300M40 100V128M280 100V128M40 100Q160 14 280 100"/><path d="M80 100V58M110 100V40M140 100V30M170 100V30M200 100V40M230 100V58" stroke-dasharray="3 3"/><path d="M545 128V52H600V128M545 72H600M545 92H600M545 110H600"/><path d="M340 96L328 128M340 96L352 128M340 96V128M332 78H348V96H332ZM340 66V78"/></g><g stroke="#f2b705" stroke-width="2"><path d="M430 128V28M446 128V28M370 28H520M400 28L430 8H446L470 28M430 128L446 100L430 76L446 52L430 28M500 28V84M492 84H508V96H492Z"/></g></svg>`;
+const hero=o=>{const r=db.projects.filter(p=>p.status=='Running').length;return `<div class="hero">${SKY}<div class="ht"><h3>${r} ${r==1?'site':'sites'} running</h3><p>${o.length} open ${o.length==1?'tender':'tenders'} worth ${inr(o.reduce((s,t)=>s+Number(t.value||0),0))} in the pipeline</p></div><svg class="na" viewBox="0 0 40 52" aria-label="North"><circle cx="20" cy="31" r="16" stroke="#fff" stroke-opacity=".6"/><path d="M20 10L28 38L20 32L12 38Z" fill="#f2b705"/><text x="20" y="8" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">N</text></svg><div class="chn"></div></div>`};
+const civView=()=>{const f=(i,l,v)=>`<div><label>${l}</label><input id="${i}" inputmode="decimal" value="${v}"></div>`;
+return `<div class="top"><h2>Civil toolkit</h2><small style="color:var(--mu)">Quick survey and site calculations. Nothing here is saved.</small></div>
+<div class="row2"><div class="card"><b>Area from coordinates</b><p class="mu">One point per line as easting, northing (metres), in order around the plot.</p><textarea id="ca" rows="5">1000,2000
+1050,2000
+1050,2060
+1000,2060</textarea><div class="res" id="car"></div></div>
+<div class="card"><b>Bearing and distance</b><p class="mu">Between two surveyed points.</p><div class="g2">${f('e1','From easting',1000)}${f('n1','From northing',2000)}${f('e2','To easting',1050)}${f('n2','To northing',2060)}</div><div class="res" id="br"></div></div></div>
+<div class="row2" style="margin-top:12px"><div class="card"><b>Earthwork volume</b><p class="mu">Average end area method between two cross-sections.</p><div class="g3">${f('a1','Area 1 (m²)',12)}${f('a2','Area 2 (m²)',18)}${f('ln','Distance (m)',30)}</div>${f('sw','Swell factor (%)',25)}<div class="res" id="ew"></div></div>
+<div class="card"><b>Concrete quantity</b><p class="mu">Materials for a volume of concrete, with 5% wastage.</p><div class="g2">${f('cv','Volume (m³)',10)}<div><label>Grade</label><select id="cg"><option value="1,2,4">M15 (1:2:4)</option><option value="1,1.5,3" selected>M20 (1:1.5:3)</option><option value="1,1,2">M25 (1:1:2)</option></select></div></div><div class="res" id="cc"></div></div></div>
+<div class="card" style="margin-top:12px"><b>Land area converter</b><div class="g2">${f('lv','Value',1)}<div><label>Unit</label><select id="lu"><option value="1">Square metre</option><option value="0.09290304">Square foot</option><option value="0.83612736">Square yard (gaj)</option><option value="4046.8564224" selected>Acre</option><option value="10000">Hectare</option></select></div></div><div class="res" id="lr"></div></div>`};
+function civBind(){
+ const n=i=>parseFloat($('#'+i).value)||0,set=(i,h)=>$('#'+i).innerHTML=h,rw=(a,b)=>`<div><span>${a}</span><b>${b}</b></div>`,fx=(x,d=2)=>x.toLocaleString('en-IN',{maximumFractionDigits:d}),
+ dms=a=>{let d=Math.floor(a),m=Math.floor((a-d)*60),s=Math.round(((a-d)*60-m)*600)/10;if(s>=60){s=0;m++}if(m>=60){m=0;d++}return d+'° '+m+'′ '+s.toFixed(1)+'″'};
+ const calc=()=>{
+  const P=$('#ca').value.split('\n').map(l=>l.trim().split(/[,\s]+/).map(Number)).filter(p=>p.length>=2&&p.every(x=>!isNaN(x)));
+  if(P.length<3)set('car','<span class="mu">Enter at least 3 points.</span>');else{let a=0,pm=0;P.forEach((p,i)=>{const q=P[(i+1)%P.length];a+=p[0]*q[1]-q[0]*p[1];pm+=Math.hypot(q[0]-p[0],q[1]-p[1])});a=Math.abs(a)/2;set('car',rw('Area',fx(a)+' m²')+rw('In acres',fx(a/4046.8564224,4))+rw('In hectares',fx(a/1e4,4))+rw('Perimeter',fx(pm)+' m'))}
+  const dE=n('e2')-n('e1'),dN=n('n2')-n('n1'),dist=Math.hypot(dE,dN);
+  set('br',dist?rw('Distance',fx(dist,3)+' m')+rw('Whole circle bearing',dms((Math.atan2(dE,dN)*180/Math.PI+360)%360))+rw('Quadrant bearing',(dN>=0?'N ':'S ')+dms(Math.atan2(Math.abs(dE),Math.abs(dN))*180/Math.PI)+(dE>=0?' E':' W')):'<span class="mu">The two points are the same.</span>');
+  const v=(n('a1')+n('a2'))/2*n('ln'),lo=v*(1+n('sw')/100);
+  set('ew',rw('Bank volume',fx(v)+' m³')+rw('Loose volume',fx(lo)+' m³')+rw('Tipper loads (10 m³)',fx(Math.ceil(lo/10),0)));
+  const [c,sa,g]=$('#cg').value.split(',').map(Number),dry=n('cv')*1.54*1.05,t=c+sa+g,cem=dry*c/t;
+  set('cc',rw('Cement',fx(Math.ceil(cem*28.8),0)+' bags (50 kg)')+rw('Sand',fx(dry*sa/t)+' m³')+rw('Aggregate',fx(dry*g/t)+' m³'));
+  const m2=n('lv')*n('lu');
+  set('lr',rw('Square metre',fx(m2))+rw('Square foot',fx(m2/0.09290304))+rw('Square yard (gaj)',fx(m2/0.83612736))+rw('Acre',fx(m2/4046.8564224,4))+rw('Hectare',fx(m2/1e4,4)))};
+ R.querySelectorAll('main textarea,main input,main select').forEach(e=>e.oninput=calc);calc()}
+const NAV=[['dash','🧭','Dashboard'],['clients','👷','Clients'],['tenders','📐','Tenders'],['ai','🛰','AI Assistant'],['projects','🏗','Projects'],['civil','📏','Civil toolkit'],['quotes','🧾','Quotations'],['invoices','💰','Invoices'],['logs','📍','Field log'],['reports','📊','Reports'],['tasks','🦺','Tasks'],['team','⚙','Settings']];
 const TABS=['dash','tenders','clients','tasks'],MORE=NAV.map(n=>n[0]).filter(k=>!TABS.includes(k));
 function draw(){
  if(!me)return loginView();if(!synced){synced=1;syncSheet();setTimeout(()=>{autoRemind();remindPopup()},4000)}
  const nb=(k,i,l,c)=>`<button data-v="${k}" class="${view==k?'on':''}"><i>${i}</i>${c?'':l}${c?`<span>${l}</span>`:''}</button>`;
  R.innerHTML=`<div id="app"><nav class="side"><div class="brand">${logo(44)}</div>${NAV.map(([k,i,l])=>nb(k,i,l)).join('')}<div class="sp"></div><button data-th><i>🌓</i>Theme</button><button data-lo><i>⏻</i><span>Logout <small>(${esc(me.user)})</small></span></button></nav>
  <header class="mbar">${logo(34)}<button class="btn" data-th aria-label="Switch theme">🌓</button></header>
- <main>${banner()}${view=='dash'?dash():view=='team'?team():view=='ai'?ai():view=='quotes'?quotesView():view=='invoices'?invView():view=='reports'?reports():listView(view)}</main>
+ <main>${banner()}${view=='dash'?dash():view=='team'?team():view=='ai'?ai():view=='quotes'?quotesView():view=='invoices'?invView():view=='reports'?reports():view=='civil'?civView():listView(view)}</main>
  <div class="tabs">${TABS.map(k=>NAV.find(n=>n[0]==k)).map(([k,i,l])=>nb(k,i,l,1)).join('')}<button data-moremenu class="${MORE.includes(view)||more?'on':''}"><i>☰</i><span>More</span></button></div>
  ${more?`<div class="sheet-bg" data-closemore></div><div class="sheet">${NAV.filter(n=>MORE.includes(n[0])).map(([k,i,l])=>nb(k,i,l)).join('')}<button data-lo><i>⏻</i>Logout (${esc(me.user)})</button></div>`:''}</div>`;
  bind();
@@ -887,10 +956,10 @@ function bind(){
  const bk=$('#bk');if(bk)bk.onclick=()=>dl(JSON.stringify(db),'intech-crm-backup.json','application/json');
  const rs=$('#rs');if(rs)rs.onclick=()=>$('#rf').click();
  const rf=$('#rf');if(rf)rf.onchange=()=>{const f=rf.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tenders)&&!Array.isArray(o.clients))throw 0;db=norm(o);save();draw()}catch(e){alert('Invalid backup file.')}})};
- if(view=='quotes'||view=='invoices')qBind();xBind();
+ if(view=='quotes'||view=='invoices')qBind();if(view=='civil')civBind();xBind();
 }
 function loginView(){
- R.innerHTML=`<div id="login"><div class="card lg"><div class="lgw">${logo(54)}</div><h1>Intech Engineers</h1><p>Sign in to your CRM</p><label>Username</label><input id="u" autocomplete="username" autocapitalize="none"><label>Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="e">${esc(loginMsg)}</div><button class="btn" id="go" style="width:100%">Sign in</button></div></div>`;loginMsg='';
+ R.innerHTML=`<div id="login"><div class="card lg"><div class="lgw">${logo(54)}</div><h1>Intech Engineers</h1><p>Land survey and civil works control room</p><label>Username</label><input id="u" autocomplete="username" autocapitalize="none"><label>Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="e">${esc(loginMsg)}</div><button class="btn" id="go" style="width:100%">Sign in</button></div></div>`;loginMsg='';
  const go=async()=>{
   const e=$('#e'),b=$('#go'),u=$('#u').value.trim().toLowerCase().replace(/\s+/g,' '),p=$('#p').value;
   if(Date.now()<lock){e.textContent='Too many attempts. Wait '+Math.ceil((lock-Date.now())/1000)+' seconds.';return}
