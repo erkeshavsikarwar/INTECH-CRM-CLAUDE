@@ -201,6 +201,9 @@ dialog{border-radius:6px;border-top:4px solid var(--yl)}
 .lg{border-top:5px solid var(--yl);border-radius:4px}.lg h1{font-size:32px;font-weight:700}
 #login::after{background:linear-gradient(180deg,rgba(6,23,42,.55),rgba(6,23,42,.88)),repeating-linear-gradient(0deg,rgba(90,169,230,.13) 0 1px,transparent 1px 28px),repeating-linear-gradient(90deg,rgba(90,169,230,.13) 0 1px,transparent 1px 28px)}
 @media(max-width:900px){.hero{padding:18px 16px 40px}.hero .ht{max-width:100%}.hero>svg:first-child{opacity:.28;right:8px}.hero h3{font-size:28px}.top h2{font-size:25px}main::before{width:300px}.stat b{font-size:26px}}
+
+.lgt{display:flex;margin:0 0 4px;border:1px solid var(--bd);border-radius:3px;overflow:hidden}.lgt button{flex:1;background:var(--hv);border:0;padding:10px;cursor:pointer;font-weight:600;color:var(--mu);min-height:42px}.lgt button.on{background:var(--nav);color:#fff;box-shadow:inset 0 -3px 0 var(--yl)}
+.tabs.emp{grid-template-columns:repeat(4,1fr)}
 </style></head><body>
 <div id="root"></div><dialog id="dlg"></dialog>
 <script>
@@ -273,7 +276,7 @@ function norm(o){o=Object.assign(blank(),o||{});COLS.forEach(k=>{o[k]=Array.isAr
 db=norm(db);
 let base=0,dirty=false,pushing=false,pend=0,cloudMsg='',loginMsg='',fails=0,lock=0;
 let sess=null;try{sess=JSON.parse(sessionStorage.getItem('intech_sess'))}catch(e){}
-let me=sess&&sess.u==OWNER&&(CLOUD_ON?sess.refreshToken:sess.t==PWH)?{user:OWNER,role:'admin',name:'Intech Engineers'}:null;
+let me=sess&&sess.u==OWNER&&(CLOUD_ON?sess.refreshToken:sess.t==PWH)?{user:OWNER,role:'admin',name:'Intech Engineers'}:(sess&&sess.role=='emp'&&CLOUD_ON&&/^emp[1-5]$/.test(sess.u)&&sess.refreshToken?{user:sess.u,role:'emp',name:sess.u}:null);
 const jf=async(u,o)=>{const r=await fetch(u,o),j=await r.json().catch(()=>null);if(!r.ok)throw new Error((j&&j.error&&(j.error.message||j.error))||('HTTP '+r.status));return j};
 async function token(){
  if(!sess)throw new Error('not signed in');
@@ -285,7 +288,7 @@ const banner=()=>{const t=bannerText();return `<div id="cs" class="al" style="${
 const setBanner=()=>{const e=$('#cs');if(e){const t=bannerText();e.style.display=t?'':'none';e.firstChild.textContent=t}};
 const redraw=()=>{const a=document.activeElement;if(me&&!D.open&&!(a&&['INPUT','TEXTAREA','SELECT'].includes(a.tagName)))draw()};
 function save(){
- db._ts=Date.now();
+ db._ts=Date.now();if(!emp())db.sites=db.projects.map(p=>({id:p.id,name:p.name}));
  if(!CLOUD_ON){try{localStorage.setItem('intech_crm',JSON.stringify(db))}catch(e){}return}
  dirty=true;clearTimeout(pend);pend=setTimeout(push,600)}
 async function push(){
@@ -293,6 +296,7 @@ async function push(){
  if(pushing){clearTimeout(pend);pend=setTimeout(push,500);return}
  if(!dirty)return;pushing=true;
  try{
+  if(sess.role=='emp'){await pushEmp();pushing=false;setBanner();return}
   const t=await token(),rts=await jf(`${CLOUD.dbUrl}/crm/_ts.json?auth=${t}`);
   if(rts&&rts>base){const j=await jf(`${CLOUD.dbUrl}/crm.json?auth=${t}`);db=norm(j);base=db._ts||0;dirty=false;cloudMsg='Data was changed on another device and has been refreshed — please re-check your last edit.';pushing=false;draw();return}
   const ts=db._ts,body=JSON.stringify(db);dirty=false;
@@ -301,6 +305,7 @@ async function push(){
  }catch(e){dirty=true;cloudMsg='Could not save to cloud ('+e.message+'). Retrying…';clearTimeout(pend);pend=setTimeout(push,5000)}
  pushing=false;setBanner()}
 async function pull(first){
+ if(sess&&sess.role=='emp')return pullEmp(first);
  const t=await token();
  if(!first){const ts=await jf(`${CLOUD.dbUrl}/crm/_ts.json?auth=${t}`);if(!ts||ts<=base)return false}
  const j=await jf(`${CLOUD.dbUrl}/crm.json?auth=${t}`);
@@ -343,7 +348,7 @@ function cell(k,r,m){
  if(k=='pstatus'){const z=payStatus(r);return `<span class="tag" style="color:var(--${z=='Paid'?'ok':z=='Overdue'?'bad':'wa'})">${z}</span>`}
  if(k=='spent')return inr(spentOf(r));
  if(k=='profit'){const p=nz(r.budget)-spentOf(r);return `<span class="${p<0?'bad':'ok'}">${inr(p)}</span>`}
- if(k=='project'&&m=='logs')return esc((db.projects.find(p=>p.id==v)||{}).name||'—');
+ if(k=='project'&&m=='logs')return esc((siteList().find(p=>p.id==v)||{}).name||'—');
  if(k=='photos')return (qArr(v).slice(0,3).map((p,i)=>`<img class="th" src="${p}" data-xa="img|${r.id}|${i}" alt="">`).join('')+(qArr(v).length>3?' +'+(qArr(v).length-3):''))||'—';
  if(k=='work')return esc(String(v||'').slice(0,160));
  if(k=='progress')return `<div class="bar"><i style="width:${Math.min(100,v||0)}%"></i></div><small>${v||0}%</small>`;
@@ -447,7 +452,7 @@ async function pushSheet(t,f){
   if(f=='award')t.lua=Date.now()+6e5;else if(t.status!='Preparing')t.lu=Date.now()+6e5;save()}
  catch(e){toast('Google Sheet not updated: '+e.message,1)}}
 async function syncSheet(manual,rowsIn){
- const s=db.set;if(!s.sheet||syncing)return;syncing=true;
+ if(emp())return;const s=db.set;if(!s.sheet||syncing)return;syncing=true;
  try{
   const rows=rowsIn||await loadRows(),H=rows[0].map(x=>x.trim().toUpperCase()),ix=n=>H.indexOf(n);
   const iD=ix('TENDER DATE'),iN=ix('TENDER NAME'),iL=ix('DRIVE LINK'),iS=ix('TENDER STATUS'),iA=ix('AWARD STATUS'),iI=ix('TENDER ID'),iV=['ESTIMATED COST','ESTIMATED RATE','ESTIMATED VALUE','ESTIMATED AMOUNT','ESTIMATED'].map(ix).find(i=>i>=0)??-1;
@@ -830,7 +835,7 @@ function logForm(id){
  const r=id?db.logs.find(a=>a.id==id):{date:iso()},ph=qArr(r.photos).slice();
  const thumbs=()=>ph.map((p,i)=>`<div style="position:relative"><img class="th" style="height:60px;width:80px" src="${p}" data-gv="${i}" alt=""><a href="#" data-gx="${i}" style="position:absolute;top:-6px;right:-2px;background:#b42318;color:#fff;border-radius:50%;width:18px;height:18px;text-align:center;line-height:18px;text-decoration:none;font-size:12px">✕</a></div>`).join('');
  D.innerHTML=`<h3 style="margin:0">${id?'Edit':'Add'} · Field work log</h3>
- <div class="g2"><div><label>Date</label><input type="date" id="g_date" value="${esc(r.date||'')}"></div><div><label>Project</label><select id="g_project"><option value="">—</option>${db.projects.map(p=>`<option value="${esc(p.id)}"${p.id==r.project?' selected':''}>${esc(p.name)}</option>`).join('')}</select></div></div>
+ <div class="g2"><div><label>Date</label><input type="date" id="g_date" value="${esc(r.date||'')}"></div><div><label>Project</label><select id="g_project"><option value="">—</option>${siteList().map(p=>`<option value="${esc(p.id)}"${p.id==r.project?' selected':''}>${esc(p.name)}</option>`).join('')}</select></div></div>
  <label>Site / location</label><input id="g_site" value="${esc(r.site||'')}"><label>Team</label><input id="g_team" value="${esc(r.team||'')}" placeholder="Who was at the site">
  <label>Work done</label><textarea id="g_work" rows="4">${esc(r.work||'')}</textarea><label>Notes / problems</label><textarea id="g_notes" rows="2">${esc(r.notes||'')}</textarea>
  <label>Photos <span class="mu">(you can add several, up to 8)</span></label><div class="pk" id="g_ph" style="gap:10px;margin:6px 0">${thumbs()}</div><input type="file" id="g_file" accept="image/*" multiple>
@@ -880,6 +885,30 @@ function invView(){
  return listView('invoices').replace('<button class="btn" data-add="invoices">','<button class="btn g" data-qs>⚙ Invoice setup</button><button class="btn" data-add="invoices">')}
 
 
+
+let lrole='o';
+const EMPV=['dash','tasks','logs','civil'],emp=()=>!!(me&&me.role=='emp'),navList=()=>emp()?NAV.filter(n=>EMPV.includes(n[0])):NAV,siteList=()=>emp()?Object.values(db.sites||{}).filter(Boolean):db.projects;
+async function pullEmp(first){
+ const t=await token(),u=p=>`${CLOUD.dbUrl}/crm/${p}.json?auth=${t}`;
+ if(!first){const ts=await jf(u('_ts'));if(!ts||ts<=base)return false}
+ const [tk,lg,st,ts]=await Promise.all([jf(u('tasks')),jf(u('logs')),jf(u('sites')),jf(u('_ts'))]);
+ db=norm({tasks:tk,logs:lg,sites:st});db.sites=Object.values(st||{}).filter(Boolean);base=ts||0;db._ts=base;return true}
+async function pushEmp(){
+ const t=await token(),u=p=>`${CLOUD.dbUrl}/crm/${p}.json?auth=${t}`,rts=await jf(u('_ts'));
+ if(rts&&rts>base){await pullEmp(true);dirty=false;cloudMsg='Data was changed on another device and has been refreshed — please re-check your last edit.';draw();return}
+ const ts=db._ts;dirty=false;
+ await jf(u('tasks'),{method:'PUT',body:JSON.stringify(db.tasks)});
+ await jf(u('logs'),{method:'PUT',body:JSON.stringify(db.logs)});
+ await jf(u('_ts'),{method:'PUT',body:JSON.stringify(ts)});base=ts;cloudMsg=''}
+function empDash(){
+ const t=db.tasks.filter(x=>!x.done),od=t.filter(x=>dleft(x.due)!=null&&dleft(x.due)<0),L=t.slice().sort((a,b)=>String(a.due||'9').localeCompare(String(b.due||'9'))).slice(0,8);
+ return `<div class="top"><h2>Dashboard</h2></div><div class="hero">${SKY}<div class="ht"><h3>Welcome, ${esc(me.user)}</h3><p>${t.length} open ${t.length==1?'task':'tasks'}, ${od.length} overdue</p></div><div class="chn"></div></div>
+ <div class="grid"><div class="card stat"><small>Open tasks</small><b>${t.length}</b></div><div class="card stat"><small>Overdue tasks</small><b>${od.length}</b></div><div class="card stat"><small>Field logs</small><b>${db.logs.length}</b></div></div>
+ <div class="card"><b>Next tasks</b>${L.map(x=>`<p style="margin:8px 0">• ${esc(x.title)} <small class="${dleft(x.due)<0?'bad':''}">${esc(fd(x.due))}${x.who?' · '+esc(x.who):''}</small></p>`).join('')||'<p style="color:var(--mu)">No open tasks.</p>'}</div>`}
+const rulesTxt=()=>{const E_="auth.token.email.matches(/^emp[1-5]@intechengineers\\.app$/)",O="auth.token.email==='"+CLOUD.email+"'",e={'.read':E_,'.write':E_};return JSON.stringify({rules:{crm:{'.read':O,'.write':O,tasks:e,logs:e,sites:{'.read':E_},_ts:e}}},null,2)};
+const empCard=()=>`<div class="card" style="margin-top:12px"><b>Employee logins</b><p class="mu">Employees use the Employee tab on the login screen with the usernames <b>emp1, emp2, emp3, emp4, emp5</b>. They only see Dashboard, Tasks, Field log and Civil toolkit. They never see tenders, clients, costs, quotations or invoices.</p>
+<p class="mu"><b>One-time setup in Firebase:</b> (1) Authentication → Users → Add user: emp1@intechengineers.app to emp5@intechengineers.app, each with its own password. (2) Realtime Database → Rules → replace with the rules below → Publish. (3) Give each employee their username and password.</p>
+<textarea id="rul" rows="12" readonly style="font-family:ui-monospace,Menlo,monospace;font-size:12px">${esc(rulesTxt())}</textarea><p><button class="btn" onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('rul').value).then(()=>toast('Rules copied'))">Copy rules</button></p></div>`;
 const SKY=`<svg viewBox="0 0 620 150" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M0 128H620" stroke="#fff" stroke-opacity=".5"/><g stroke="#fff" stroke-opacity=".55" stroke-width="1.5"><path d="M20 100H300M40 100V128M280 100V128M40 100Q160 14 280 100"/><path d="M80 100V58M110 100V40M140 100V30M170 100V30M200 100V40M230 100V58" stroke-dasharray="3 3"/><path d="M545 128V52H600V128M545 72H600M545 92H600M545 110H600"/><path d="M340 96L328 128M340 96L352 128M340 96V128M332 78H348V96H332ZM340 66V78"/></g><g stroke="#f2b705" stroke-width="2"><path d="M430 128V28M446 128V28M370 28H520M400 28L430 8H446L470 28M430 128L446 100L430 76L446 52L430 28M500 28V84M492 84H508V96H492Z"/></g></svg>`;
 const hero=o=>{const r=db.projects.filter(p=>p.status=='Running').length;return `<div class="hero">${SKY}<div class="ht"><h3>${r} ${r==1?'site':'sites'} running</h3><p>${o.length} open ${o.length==1?'tender':'tenders'} worth ${inr(o.reduce((s,t)=>s+Number(t.value||0),0))} in the pipeline</p></div><svg class="na" viewBox="0 0 40 52" aria-label="North"><circle cx="20" cy="31" r="16" stroke="#fff" stroke-opacity=".6"/><path d="M20 10L28 38L20 32L12 38Z" fill="#f2b705"/><text x="20" y="8" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">N</text></svg><div class="chn"></div></div>`};
 const civView=()=>{const f=(i,l,v)=>`<div><label>${l}</label><input id="${i}" inputmode="decimal" value="${v}"></div>`;
@@ -910,12 +939,12 @@ function civBind(){
 const NAV=[['dash','🧭','Dashboard'],['clients','👷','Clients'],['tenders','📐','Tenders'],['ai','🛰','AI Assistant'],['projects','🏗','Projects'],['civil','📏','Civil toolkit'],['quotes','🧾','Quotations'],['invoices','💰','Invoices'],['logs','📍','Field log'],['reports','📊','Reports'],['tasks','🦺','Tasks'],['team','⚙','Settings']];
 const TABS=['dash','tenders','clients','tasks'],MORE=NAV.map(n=>n[0]).filter(k=>!TABS.includes(k));
 function draw(){
- if(!me)return loginView();if(!synced){synced=1;syncSheet();setTimeout(()=>{autoRemind();remindPopup()},4000)}
+ if(!me)return loginView();if(emp()&&!EMPV.includes(view))view='dash';if(!synced){synced=1;syncSheet();setTimeout(()=>{autoRemind();remindPopup()},4000)}
  const nb=(k,i,l,c)=>`<button data-v="${k}" class="${view==k?'on':''}"><i>${i}</i>${c?'':l}${c?`<span>${l}</span>`:''}</button>`;
- R.innerHTML=`<div id="app"><nav class="side"><div class="brand">${logo(44)}</div>${NAV.map(([k,i,l])=>nb(k,i,l)).join('')}<div class="sp"></div><button data-th><i>🌓</i>Theme</button><button data-lo><i>⏻</i><span>Logout <small>(${esc(me.user)})</small></span></button></nav>
+ R.innerHTML=`<div id="app"><nav class="side"><div class="brand">${logo(44)}</div>${navList().map(([k,i,l])=>nb(k,i,l)).join('')}<div class="sp"></div><button data-th><i>🌓</i>Theme</button><button data-lo><i>⏻</i><span>Logout <small>(${esc(me.user)})</small></span></button></nav>
  <header class="mbar">${logo(34)}<button class="btn" data-th aria-label="Switch theme">🌓</button></header>
- <main>${banner()}${view=='dash'?dash():view=='team'?team():view=='ai'?ai():view=='quotes'?quotesView():view=='invoices'?invView():view=='reports'?reports():view=='civil'?civView():listView(view)}</main>
- <div class="tabs">${TABS.map(k=>NAV.find(n=>n[0]==k)).map(([k,i,l])=>nb(k,i,l,1)).join('')}<button data-moremenu class="${MORE.includes(view)||more?'on':''}"><i>☰</i><span>More</span></button></div>
+ <main>${banner()}${view=='dash'?(emp()?empDash():dash()):view=='team'?team()+empCard():view=='ai'?ai():view=='quotes'?quotesView():view=='invoices'?invView():view=='reports'?reports():view=='civil'?civView():listView(view)}</main>
+ <div class="tabs${emp()?' emp':''}">${(emp()?EMPV:TABS).map(k=>NAV.find(n=>n[0]==k)).map(([k,i,l])=>nb(k,i,l,1)).join('')}${emp()?'':`<button data-moremenu class="${MORE.includes(view)||more?'on':''}"><i>☰</i><span>More</span></button>`}</div>
  ${more?`<div class="sheet-bg" data-closemore></div><div class="sheet">${NAV.filter(n=>MORE.includes(n[0])).map(([k,i,l])=>nb(k,i,l)).join('')}<button data-lo><i>⏻</i>Logout (${esc(me.user)})</button></div>`:''}</div>`;
  bind();
 }
@@ -959,7 +988,7 @@ function bind(){
  if(view=='quotes'||view=='invoices')qBind();if(view=='civil')civBind();xBind();
 }
 function loginView(){
- R.innerHTML=`<div id="login"><div class="card lg"><div class="lgw">${logo(54)}</div><h1>Intech Engineers</h1><p>Land survey and civil works control room</p><label>Username</label><input id="u" autocomplete="username" autocapitalize="none"><label>Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="e">${esc(loginMsg)}</div><button class="btn" id="go" style="width:100%">Sign in</button></div></div>`;loginMsg='';
+ R.innerHTML=`<div id="login"><div class="card lg"><div class="lgw">${logo(54)}</div><h1>Intech Engineers</h1><p>Land survey and civil works control room</p><div class="lgt"><button data-lr="o" class="${lrole=='o'?'on':''}">Owner</button><button data-lr="e" class="${lrole=='e'?'on':''}">Employee</button></div><label>Username</label><input id="u" autocomplete="username" autocapitalize="none" placeholder="${lrole=='e'?'emp1 to emp5':''}"><label>Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="e">${esc(loginMsg)}</div><button class="btn" id="go" style="width:100%">Sign in</button></div></div>`;loginMsg='';R.querySelectorAll('[data-lr]').forEach(b=>b.onclick=()=>{lrole=b.dataset.lr;loginView()});
  const go=async()=>{
   const e=$('#e'),b=$('#go'),u=$('#u').value.trim().toLowerCase().replace(/\s+/g,' '),p=$('#p').value;
   if(Date.now()<lock){e.textContent='Too many attempts. Wait '+Math.ceil((lock-Date.now())/1000)+' seconds.';return}
@@ -968,6 +997,13 @@ function loginView(){
   b.disabled=true;e.textContent='';
   const bad=m=>{fails++;if(fails>=5){lock=Date.now()+30000;fails=0}e.textContent=m||'Wrong username or password.';b.disabled=false};
   try{
+   if(lrole=='e'){
+    const em=u.replace(/ /g,'');if(!CLOUD_ON||!/^emp[1-5]$/.test(em))return bad();
+    let j;try{j=await jf('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+CLOUD.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:em+'@intechengineers.app',password:p,returnSecureToken:true})})}
+    catch(x){return /INVALID_PASSWORD|INVALID_LOGIN_CREDENTIALS|EMAIL_NOT_FOUND/.test(x.message)?bad():(e.textContent='Cloud login error: '+x.message,void(b.disabled=false))}
+    sess={u:em,role:'emp',idToken:j.idToken,refreshToken:j.refreshToken,exp:Date.now()+(+j.expiresIn)*1000};
+    try{await pull(true)}catch(x){sess=null;e.textContent='Could not load data: '+x.message;b.disabled=false;return}
+    fails=0;me={user:em,role:'emp',name:em};sessionStorage.setItem('intech_sess',JSON.stringify(sess));synced=0;view='dash';draw();return}
    if(u!=OWNER)return bad();
    if(CLOUD_ON){
     let j;try{j=await jf('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+CLOUD.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:CLOUD.email,password:p,returnSecureToken:true})})}
