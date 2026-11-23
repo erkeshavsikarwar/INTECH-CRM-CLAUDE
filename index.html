@@ -155,6 +155,11 @@ label.tk{display:flex;gap:9px;align-items:flex-start;font-weight:400;color:var(-
 .pki:has(input:checked){border-color:var(--ac);background:var(--hv);box-shadow:0 0 0 1px var(--ac)}
 
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#0f1722;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;z-index:9999;opacity:0;transition:opacity .25s;box-shadow:0 8px 24px #0006;max-width:90vw;pointer-events:none}#toast.bad{background:#b42318}
+
+.xm{width:auto;max-width:128px;padding:4px 6px;font-size:13px}
+.th{height:34px;width:46px;object-fit:cover;border-radius:5px;margin-right:4px;cursor:pointer;vertical-align:middle}
+#lbx{position:fixed;inset:0;background:#000d;z-index:10000;display:grid;place-items:center;cursor:zoom-out}#lbx img{max-width:94vw;max-height:90vh;border-radius:8px}
+dialog#dlg .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 </style></head><body>
 <div id="root"></div><dialog id="dlg"></dialog>
 <script>
@@ -168,7 +173,7 @@ const OWNER='intech engineers',PWH='d25db7d72523cba5ae349f25f4d486406dedd18aeedc
 /* Paste your Firebase values here (see setup steps). Leave empty = data stays only in this browser. */
 const CLOUD={apiKey:'AIzaSyCg-xbapyII8v_pRkQgmRT2hUfZJwlyp6A',dbUrl:'https://intech-crm-6add2-default-rtdb.firebaseio.com',email:'crm@intechengineers.app'};
 const CLOUD_ON=!!(CLOUD.apiKey&&CLOUD.dbUrl);CLOUD.dbUrl=CLOUD.dbUrl.replace(/\/+$/,'');
-const COLS=['clients','tenders','projects','tasks','quotes'];
+const COLS=['clients','tenders','projects','tasks','quotes','invoices','logs','rates'];
 const TCD=[
 ['Price & Taxes','GST @ 18% will be charged extra on the above rates.',1],
 ['Price & Taxes','The above rates are inclusive of GST.',0],
@@ -217,7 +222,7 @@ const TCD=[
 ['General & Legal','All data and information shared will be kept confidential.',0],
 ['General & Legal','Either party may terminate the work by giving 7 days written notice; payment for the work done up to that date shall be made.',0]
 ];
-const blank=()=>({clients:[],tenders:[],projects:[],tasks:[],quotes:[],set:{}});
+const blank=()=>({clients:[],tenders:[],projects:[],tasks:[],quotes:[],invoices:[],logs:[],rates:[],set:{}});
 function norm(o){o=Object.assign(blank(),o||{});COLS.forEach(k=>{o[k]=Array.isArray(o[k])?o[k].filter(Boolean):Object.values(o[k]||{})});
  o.set=Object.assign({wa:'',sheet:'1XFmAsJyJxvgOIkGYnM0Xy6htWByZvQD8vjB2oVz8fD0',gid:'0',logo:'',cmb:'',prov:'cmb',p1:'',p2:'',sent:{}},o.set||{});
  if(o.set.logoV!==2){o.set.logo='';o.set.logoV=2}if(!o.set.sent)o.set.sent={};
@@ -274,20 +279,32 @@ const quoteTotal=x=>qCalc(x).tot;
 
 const clientOpts=()=>db.clients.map(c=>[c.id,c.name]);
 const E={
-clients:{t:'Clients & Leads',f:[['name','Company / Name','text'],['contact','Contact person','text'],['phone','Phone (with country code)','text'],['email','Email','text'],['city','City','text'],['status','Stage','select',['Lead','Contacted','Negotiation','Active','Inactive']],['notes','Notes','textarea']],c:['name','contact','phone','city','status']},
+clients:{t:'Clients & Leads',f:[['name','Company / Name','text'],['contact','Contact person','text'],['phone','Phone (with country code)','text'],['email','Email','text'],['city','City','text'],['gst','GST number (GSTIN)','text'],['pan','PAN number','text'],['status','Stage','select',['Lead','Contacted','Negotiation','Active','Inactive']],['notes','Notes','textarea']],c:['name','contact','phone','city','gst','pan','status']},
 tenders:{t:'Tenders',f:[['name','Tender name','text'],['tid','Tender ID','text'],['client','Client / Department','select',clientOpts],['date','Tender date','date'],['time','Time','time'],['value','Estimated cost / rate (₹)','number'],['status','Tender status','select',['Identified','Preparing','Submitted','Closed']],['award','Award status','select',['Pending','Won','Lost','Cancelled']],['owner','Assigned to','text'],['link','Drive link','url'],['notes','Description','textarea']],c:['tid','name','date','filled','award','owner','value']},
-projects:{t:'Projects',f:[['name','Project name','text'],['client','Client','select',clientOpts],['budget','Budget (₹)','number'],['progress','Progress %','number'],['deadline','Deadline','date'],['status','Status','select',['Planning','Running','On hold','Completed']]],c:['name','client','budget','progress','deadline','status']},
+projects:{t:'Projects',f:[['name','Project name','text'],['client','Client','select',clientOpts],['budget','Budget (₹)','number'],['progress','Progress %','number'],['deadline','Deadline','date'],['status','Status','select',['Planning','Running','On hold','Completed']]],c:['name','client','budget','spent','profit','progress','deadline','status']},
 tasks:{t:'Tasks',f:[['title','Task','text'],['who','Assigned to','text'],['due','Due date','date'],['pri','Priority','select',['High','Medium','Low']],['done','Done','check']],c:['title','who','due','pri','done']},
-quotes:{t:'Quotations',f:[['no','Quote no.','text'],['client','Client','select',clientOpts],['item','Description','text'],['amount','Amount before tax (₹)','number'],['gst','GST %','number'],['date','Date','date'],['status','Status','select',['Draft','Sent','Accepted','Rejected','Paid']]],c:['no','client','item','amount','total','status']}
+quotes:{t:'Quotations',f:[['no','Quote no.','text'],['client','Client','select',clientOpts],['item','Description','text'],['amount','Amount before tax (₹)','number'],['gst','GST %','number'],['date','Date','date'],['status','Status','select',['Draft','Sent','Accepted','Rejected','Paid']]],c:['no','client','item','amount','total','status']},
+invoices:{t:'Invoices',f:[['no','Invoice no.','text'],['client','Client','select',clientOpts],['date','Date','date'],['due','Due date','date'],['amount','Amount before tax (₹)','number'],['gst','GST %','number']],c:['no','client','date','due','total','paid','bal','pstatus']},
+logs:{t:'Field work log',f:[['date','Date','date'],['project','Project','text'],['site','Site / location','text'],['team','Team','text'],['work','Work done','textarea'],['notes','Notes','textarea']],c:['date','project','site','team','work','photos']}
 };
 function cell(k,r,m){
  const v=r[k];
  if(k=='filled'){const o=[['Identified','❌ Not filled'],['Preparing','🛠 Preparing'],['Submitted','✅ Filled'],['Closed','🔒 Closed']];return `<select data-st="${r.id}" style="width:auto;min-width:130px;padding:4px 8px;font-weight:600;color:${r.status=='Submitted'?'var(--ok)':r.status=='Closed'?'var(--mu)':'var(--bad)'}">${o.map(([a,b])=>`<option value="${a}" ${(r.status||'Identified')==a?'selected':''}>${b}</option>`).join('')}</select>`}
  if(k=='name'&&m=='tenders')return `<span class="tn" title="${esc(v)}">${esc(v)}</span>`;
  if(k=='client')return esc(clientName(v)!='—'?clientName(v):((r.to||'').split('\n')[0]||'—'));
+ if(k=='due'&&m=='invoices'&&payStatus(r)=='Paid')return esc(fd(v));
+ if(k=='date'&&['invoices','logs','quotes'].includes(m))return esc(fd(v));
  if(k=='date'||k=='due'||k=='deadline'){const d=dleft(v);const c=d!=null&&d<0&&!r.done?'bad':d!=null&&d<=2&&d>=0?'wa':'';return `<span class="${c}">${esc(fd(v))}${m=='tenders'&&r.time?' '+esc(r.time):''}${d!=null&&d>=0&&d<=2&&m!='tasks'?' ('+(d?d+'d':'today')+')':''}</span>`}
  if(k=='value'||k=='budget'||k=='amount')return inr(v);
  if(k=='total')return inr(quoteTotal(r));
+ if(k=='paid')return inr(paidOf(r));
+ if(k=='bal'){const b=balOf(r);return `<span class="${b>0.5?'bad':'ok'}">${inr(b)}</span>`}
+ if(k=='pstatus'){const z=payStatus(r);return `<span class="tag" style="color:var(--${z=='Paid'?'ok':z=='Overdue'?'bad':'wa'})">${z}</span>`}
+ if(k=='spent')return inr(spentOf(r));
+ if(k=='profit'){const p=nz(r.budget)-spentOf(r);return `<span class="${p<0?'bad':'ok'}">${inr(p)}</span>`}
+ if(k=='project'&&m=='logs')return esc((db.projects.find(p=>p.id==v)||{}).name||'—');
+ if(k=='photos')return (qArr(v).slice(0,3).map((p,i)=>`<img class="th" src="${p}" data-xa="img|${r.id}|${i}" alt="">`).join('')+(qArr(v).length>3?' +'+(qArr(v).length-3):''))||'—';
+ if(k=='work')return esc(String(v||'').slice(0,160));
  if(k=='progress')return `<div class="bar"><i style="width:${Math.min(100,v||0)}%"></i></div><small>${v||0}%</small>`;
  if(k=='done')return v?'<span class="ok">✔</span>':'—';
  if(k=='award')return `<select data-aw="${r.id}" style="width:auto;min-width:110px;padding:4px 8px;color:${v=='Won'?'var(--ok)':v=='Lost'?'var(--bad)':'inherit'}">${['Pending','Won','Lost','Cancelled'].map(x=>`<option ${(v||'Pending')==x?'selected':''}>${x}</option>`).join('')}</select>`;
@@ -313,6 +330,10 @@ function openForm(m,id){
   const o=r.id?r:{id:uid()},ps=o.status,pa=o.award;
   cfg.f.forEach(([k,,t])=>{const e=$('#f_'+k);o[k]=t=='check'?e.checked:e.value});
   if(!o[cfg.f[0][0]]){alert('Please fill the first field.');return}
+  if(m=='clients'){o.gst=(o.gst||'').trim().toUpperCase();o.pan=(o.pan||'').trim().toUpperCase();const bad=[];
+   if(o.gst&&!/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(o.gst))bad.push('GST number (should be 15 characters, e.g. 07ABCDE1234F1Z5)');
+   if(o.pan&&!/^[A-Z]{5}\d{4}[A-Z]$/.test(o.pan))bad.push('PAN number (should be 10 characters, e.g. ABCDE1234F)');
+   if(bad.length&&!confirm('Please check: '+bad.join(' and ')+'.\n\nSave anyway?'))return}
   if(m=='tenders'&&r.id){o.lock=1;delete o.lu;delete o.lua}if(!r.id)db[m].push(o);save();D.close();draw();if(m=='tenders'&&r.id){if(o.status!=ps)pushSheet(o,'status');if(o.award!=pa)pushSheet(o,'award')}};
 }
 const remMsg=t=>`⏰ *Tender Reminder – Intech Engineers*\n\nYou have a tender on *${fd(t.date)}${t.time?' at '+t.time:''}*.\nKindly fill it on time.\n\nTender: ${t.name}\nID: ${t.tid||'—'}${t.notes?'\nDetails: '+t.notes:''}${t.link?'\nFolder: '+t.link:''}`;
@@ -451,12 +472,12 @@ const logo=(h=40)=>{const c=db.set.logo,l=c||LOGO,bg=c?'#fff;border:1px solid #d
 function dash(){
  const open=db.tenders.filter(t=>t.status!='Closed'&&!['Won','Lost','Cancelled'].includes(t.award)&&(t.status=='Submitted'||dleft(t.date)>=0));
  const won=db.tenders.filter(t=>t.award=='Won'),dec=db.tenders.filter(t=>t.award=='Won'||t.award=='Lost');
- const stats=[['Clients & leads',db.clients.length],['Open tenders',open.length],['Tender pipeline',inr(open.reduce((s,t)=>s+Number(t.value||0),0))],['Tender win rate',dec.length?Math.round(won.length/dec.length*100)+'%':'—'],['Running projects',db.projects.filter(p=>p.status=='Running').length],['Pending tasks',db.tasks.filter(t=>!t.done).length],['Quotes outstanding',inr(db.quotes.filter(x=>['Sent','Accepted'].includes(x.status)).reduce((s,x)=>s+quoteTotal(x),0))]];
+ const stats=[['Clients & leads',db.clients.length],['Open tenders',open.length],['Tender pipeline',inr(open.reduce((s,t)=>s+Number(t.value||0),0))],['Tender win rate',dec.length?Math.round(won.length/dec.length*100)+'%':'—'],['Running projects',db.projects.filter(p=>p.status=='Running').length],['Pending tasks',db.tasks.filter(t=>!t.done).length],['Quotes outstanding',inr(db.quotes.filter(x=>['Sent','Accepted'].includes(x.status)).reduce((s,x)=>s+quoteTotal(x),0))],...xStats()];
  const stages=['Lead','Contacted','Negotiation','Active','Inactive'],mx=Math.max(1,...stages.map(s=>db.clients.filter(c=>c.status==s).length));
  const al=dueTenders();
  return `<div class="top"><h2>Dashboard</h2></div>
  ${al.length?`<h3 style="margin:0 0 8px">⏰ Tender reminders (next 2 days)</h3>`+al.map(t=>`<div class="al"><div><b>${esc(t.name)}</b><br><small>${esc(fd(t.date))} ${esc(t.time)} · ${dleft(t.date)?'in '+dleft(t.date)+' days':'<b class="bad">TODAY</b>'} · ${esc(clientName(t.client))}</small></div><button class="btn s" data-wa="${t.id}">Send on WhatsApp</button></div>`).join(''):'<div class="card" style="margin-bottom:14px">No tenders due in the next 2 days.</div>'}
- <div class="grid">${stats.map(s=>`<div class="card stat"><small>${s[0]}</small><b>${s[1]}</b></div>`).join('')}</div>
+ ${xDash()}<div class="grid">${stats.map(s=>`<div class="card stat"><small>${s[0]}</small><b>${s[1]}</b></div>`).join('')}</div>
  <div class="row2"><div class="card"><b>Client pipeline</b>${stages.map(s=>{const n=db.clients.filter(c=>c.status==s).length;return `<div style="margin-top:8px"><small>${s} · ${n}</small><div class="bar"><i style="width:${n/mx*100}%"></i></div></div>`}).join('')}</div>
  <div class="card"><b>Overdue &amp; today’s tasks</b>${db.tasks.filter(t=>!t.done&&dleft(t.due)!=null&&dleft(t.due)<=0).map(t=>`<p style="margin:6px 0">• ${esc(t.title)} <small class="${dleft(t.due)<0?'bad':'wa'}">${esc(fd(t.due))}</small></p>`).join('')||'<p style="color:var(--mu)">Nothing overdue.</p>'}</div></div>`;
 }
@@ -467,15 +488,15 @@ function team(){
 <p id="wh" style="color:var(--mu);font-size:12px;margin:4px 0"></p><p><button class="btn" id="sw">Save number</button></p>${me.role=='admin'?`<hr style="border:0;border-top:1px solid var(--bd)"><b>Company logo</b><p><input type="file" id="lf" accept="image/*"></p><hr style="border:0;border-top:1px solid var(--bd)"><b>Google Sheet (tender sync)</b><label>Sheet link or ID</label><input id="sid" value="${esc(db.set.sheet)}"><label>Tab gid</label><input id="sgid" value="${esc(db.set.gid)}"><p><button class="btn" id="ss">Save &amp; sync now</button></p><hr style="border:0;border-top:1px solid var(--bd)"><b>Send changes back to the Sheet (optional)</b><p style="color:var(--mu);margin:4px 0;font-size:12.5px">When you change Filled / Award status here, the same change is written to the Google Sheet. Needs the small Apps Script (steps provided separately).</p><label>Apps Script web app URL</label><input id="gurl" placeholder="https://script.google.com/macros/s/.../exec" value="${esc(db.set.gas||'')}"><label>Secret word</label><input id="gtok" type="password" autocomplete="off" value="${esc(db.set.gtok||'')}"><p><button class="btn" id="gs">Save &amp; test connection</button></p>`:''}<hr style="border:0;border-top:1px solid var(--bd)"><b>Backup</b><p style="color:var(--mu);margin:4px 0">${CLOUD_ON?'Data is stored in your secure cloud database. A backup copy is still a good idea.':'Data is stored in this browser only. Download a backup regularly.'}</p><button class="btn g" id="bk">Download backup</button> <button class="btn g" id="rs">Restore backup</button><input type="file" id="rf" accept=".json" hidden></div></div>`;
 }
 function listView(m){
- const cfg=E[m],hd=cfg.c.map(k=>({filled:'Filled?',total:'Total incl. GST',tid:'ID',pri:'Priority',who:'Assigned',due:'Due'}[k]||(cfg.f.find(f=>f[0]==k)||[0,k])[1].split(' (')[0])),ql=q.toLowerCase();
- const rows=db[m].filter(r=>!ql||JSON.stringify(r).toLowerCase().includes(ql)).sort((a,b)=>String(a.date||a.due||a.deadline||'9').localeCompare(String(b.date||b.due||b.deadline||'9')));if(m=='tenders')rows.reverse();
+ const cfg=E[m],hd=cfg.c.map(k=>({filled:'Filled?',total:'Total incl. GST',tid:'ID',pri:'Priority',who:'Assigned',due:'Due',paid:'Received',bal:'Balance',pstatus:'Payment',spent:'Spent',profit:'Profit',photos:'Photos'}[k]||(cfg.f.find(f=>f[0]==k)||[0,k])[1].split(' (')[0])),ql=q.toLowerCase();
+ const rows=db[m].filter(r=>!ql||JSON.stringify(r.photos?{...r,photos:0}:r).toLowerCase().includes(ql)).sort((a,b)=>String(a.date||a.due||a.deadline||'9').localeCompare(String(b.date||b.due||b.deadline||'9')));if(['tenders','invoices','logs'].includes(m))rows.reverse();
  let all=rows,cnt={all:0,f:0,n:0};
  if(m=='tenders'){all.forEach(t=>{cnt.all++;isFilled(t)?cnt.f++:cnt.n++});if(tf=='f')all=all.filter(isFilled);else if(tf=='n')all=all.filter(t=>!isFilled(t));if(af)all=all.filter(t=>(t.award||'Pending')==af);if(auf)all=all.filter(t=>authOf(t)==auf)}
  const total=all.length,shown=m=='tenders'?all.slice(0,tshow):all,left=total-shown.length;
  const tabs=m=='tenders'?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px">${[['all','All',cnt.all],['f','✅ Filled',cnt.f],['n','❌ Not filled',cnt.n]].map(([k,l,n])=>`<button class="btn ${tf==k?'':'g'} s" data-tf="${k}">${l} (${n})</button>`).join('')}${[['Award status','af',['Pending','Won','Lost','Cancelled']],['Authority','auf',[...AUTH,'Other']]].map(([l,v,o])=>`<select data-sel="${v}" style="width:auto"><option value="">${l}: All</option>${o.map(x=>`<option ${(v=='af'?af:auf)==x?'selected':''}>${x}</option>`).join('')}</select>`).join('')}${af||auf||tf!='all'?'<button class="btn g s" data-clr>Clear filters</button>':''}</div>`:'';
  const more=m=='tenders'&&left>0?`<p style="text-align:center;margin:12px 0"><small style="color:var(--mu)">Showing ${shown.length} of ${total}</small><br><button class="btn g" data-more="10">Show 10 more</button> <button class="btn" data-more="all">Show all (${total})</button></p>`:(m=='tenders'&&total>10?`<p style="text-align:center;margin:12px 0"><small style="color:var(--mu)">Showing all ${total}</small> <button class="btn g s" data-more="less">Show less</button></p>`:'');
  return `<div class="top"><h2>${cfg.t}</h2><input id="sq" placeholder="Search…" value="${esc(q)}">${m=='tenders'?`<button class="btn g" data-sy>↻ Sync sheet</button><button class="btn g" data-ic>⬆ Import CSV</button><input type="file" id="icf" accept=".csv" hidden><small style="color:var(--mu);flex-basis:100%">${esc(syncMsg||('Last sync: '+(db.set.last||'never')))}</small>`:''}<button class="btn g" data-ex="${m}">Export CSV</button><button class="btn" data-add="${m}">+ Add</button></div>
- ${tabs}<div class="card tw lw"><table class="lt ${m=='tenders'?'one':''}"><tr class="hd">${hd.map(h=>`<th>${esc(h)}</th>`).join('')}<th></th></tr>${shown.map(r=>`<tr>${cfg.c.map((k,i)=>['name','title','no'].includes(k)?`<td class="ttl">${cell(k,r,m)}</td>`:`<td data-l="${esc(hd[i])}"${cell(k,r,m)===''?' class="e"':''}>${cell(k,r,m)}</td>`).join('')}<td class="act">${m=='tenders'?`<button class="btn g s" data-wa="${r.id}" title="WhatsApp reminder">💬</button> <button class="btn g s" data-fn="${r.id}" title="Copy folder name">📁</button> `:''}${m=='tenders'&&r.link?`<a class="btn g s" href="${esc(r.link)}" target="_blank" rel="noopener" style="text-decoration:none" title="Open Drive folder">📂</a> `:''}${m=='tasks'?`<button class="btn g s" data-tg="${r.id}">${r.done?'Undo':'Done'}</button> `:''}${m=='quotes'?`<button class="btn g s" data-pr="${r.id}">Print</button> `:''}<button class="btn g s" data-ed="${m}|${r.id}">Edit</button> ${me.role=='admin'?`<button class="btn g s r" data-dl="${m}|${r.id}">✕</button>`:''}</td></tr>`).join('')||`<tr><td colspan="9" style="color:var(--mu)">No records yet. Click “+ Add”.</td></tr>`}</table></div>${more}`;
+ ${tabs}<div class="card tw lw"><table class="lt ${m=='tenders'?'one':''}"><tr class="hd">${hd.map(h=>`<th>${esc(h)}</th>`).join('')}<th></th></tr>${shown.map(r=>`<tr>${cfg.c.map((k,i)=>['name','title','no'].includes(k)?`<td class="ttl">${cell(k,r,m)}</td>`:`<td data-l="${esc(hd[i])}"${cell(k,r,m)===''?' class="e"':''}>${cell(k,r,m)}</td>`).join('')}<td class="act">${m=='tenders'?`<button class="btn g s" data-wa="${r.id}" title="WhatsApp reminder">💬</button> <button class="btn g s" data-fn="${r.id}" title="Copy folder name">📁</button> `:''}${m=='tenders'&&r.link?`<a class="btn g s" href="${esc(r.link)}" target="_blank" rel="noopener" style="text-decoration:none" title="Open Drive folder">📂</a> `:''}${m=='tasks'?`<button class="btn g s" data-tg="${r.id}">${r.done?'Undo':'Done'}</button> `:''}${rowActs(m,r)}<button class="btn g s" data-ed="${m}|${r.id}">Edit</button> ${me.role=='admin'?`<button class="btn g s r" data-dl="${m}|${r.id}">✕</button>`:''}</td></tr>`).join('')||`<tr><td colspan="9" style="color:var(--mu)">No records yet. Click “+ Add”.</td></tr>`}</table></div>${more}`;
 }
 function csv(m){
  const f=E[m].f.filter(x=>x[2]!='check'||1);const L=[f.map(x=>x[1]).join(',')];
@@ -493,13 +514,13 @@ function inWords(n){n=Math.round(nz(n)*100)/100;const a=['','One','Two','Three',
  let r=Math.floor(n),p=Math.round((n-r)*100),o=[];
  [[1e7,'Crore'],[1e5,'Lakh'],[1e3,'Thousand']].forEach(([d,l])=>{const q=Math.floor(r/d);if(q){o.push(h(q)+' '+l);r%=d}});
  if(r)o.push(h(r));return 'Rupees '+(o.join(' ')||'Zero')+(p?' and '+w(p)+' Paise':'')+' Only'}
-function loadImg(file,maxW,cut,jpg){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const k=Math.min(1,maxW/im.width),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const g=c.getContext('2d');if(jpg){g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height)}g.drawImage(im,0,0,c.width,c.height);
+function loadImg(file,maxW,cut,jpg,qual){return new Promise((res,rej)=>{const im=new Image();im.onload=()=>{const k=Math.min(1,maxW/im.width),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const g=c.getContext('2d');if(jpg){g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height)}g.drawImage(im,0,0,c.width,c.height);
  if(cut){const d=g.getImageData(0,0,c.width,c.height),p=d.data;for(let i=0;i<p.length;i+=4){const m=Math.min(p[i],p[i+1],p[i+2]);if(m>=238)p[i+3]=0;else if(m>195)p[i+3]=Math.round(p[i+3]*(238-m)/43)}g.putImageData(d,0,0)}
- const u=jpg?c.toDataURL('image/jpeg',.9):c.toDataURL('image/png');URL.revokeObjectURL(im.src);res(u)};im.onerror=()=>rej(new Error('Could not read this image file.'));im.src=URL.createObjectURL(file)})}
+ const u=jpg?c.toDataURL('image/jpeg',qual||.9):c.toDataURL('image/png');URL.revokeObjectURL(im.src);res(u)};im.onerror=()=>rej(new Error('Could not read this image file.'));im.src=URL.createObjectURL(file)})}
 const qArr=v=>Array.isArray(v)?v:(v&&typeof v=='object'?Object.values(v):(v?[v]:[]));
 const qItems=x=>(x.items&&x.items.length)?x.items:[{d:x.item||'',u:'Nos',q:1,r:x.amount||0}];
 const qCalc=x=>{const it=qItems(x),sub=it.reduce((s,i)=>s+nz(i.q)*nz(i.r),0),gm=x.gstMode||'add',g=nz(x.gst??18),ga=gm=='add'?sub*g/100:0;return{sub,gm,g,ga,tot:sub+ga,n:it.length}};
-const qNext=()=>{const y=new Date().getFullYear(),p='INT/'+y+'/';let n=0;db.quotes.forEach(q=>{const m=String(q.no||'').startsWith(p)&&parseInt(String(q.no).slice(p.length));if(m>n)n=m});return p+String(n+1).padStart(3,'0')};
+const qNext=k=>{const y=new Date().getFullYear(),p=(k=='i'?'INV/':'INT/')+y+'/';let n=0;(k=='i'?db.invoices:db.quotes).forEach(q=>{const m=String(q.no||'').startsWith(p)&&parseInt(String(q.no).slice(p.length));if(m>n)n=m});return p+String(n+1).padStart(3,'0')};
 const QCSS=`.pg{position:relative;width:210mm;min-height:297mm;padding:12mm 14mm;background:#fff;color:#000;font:11pt/1.4 Arial,Helvetica,sans-serif;box-sizing:border-box;overflow:hidden;text-align:left}
 .pg *{box-sizing:border-box}
 .pg .lhbg{position:absolute;top:0;left:0;width:210mm;height:297mm;z-index:0}
@@ -526,39 +547,45 @@ const QCSS=`.pg{position:relative;width:210mm;min-height:297mm;padding:12mm 14mm
 .pg .sgn{max-height:20mm;max-width:50mm;width:auto;height:auto;object-fit:contain;mix-blend-mode:multiply}`;
 document.head.appendChild(Object.assign(document.createElement('style'),{textContent:QCSS}));
 function quoteDoc(x){
- const it=qItems(x),c=qCalc(x),lh=db.set.lh.find(a=>a.id==x.lh),sgs=qArr(x.sg).map(i=>db.set.sg.find(a=>a.id==i)).filter(Boolean),sts=qArr(x.st).map(i=>db.set.st.find(a=>a.id==i)).filter(Boolean),nl=s=>esc(s||'').replace(/\n/g,'<br>');
- const full=lh&&lh.full,pt=full?Math.max(0,nz(lh.pt)-12):0,tl=x.terms||[],showTot=c.gm=='add'||c.n>1;
+ const inv=x.k=='i',it=qItems(x),c=qCalc(x),lh=db.set.lh.find(a=>a.id==x.lh),sgs=qArr(x.sg).map(i=>db.set.sg.find(a=>a.id==i)).filter(Boolean),sts=qArr(x.st).map(i=>db.set.st.find(a=>a.id==i)).filter(Boolean),nl=s=>esc(s||'').replace(/\n/g,'<br>');
+ const full=lh&&lh.full,pt=full?Math.max(0,nz(lh.pt)-12):0,tl=x.terms||[],showTot=inv||c.gm=='add'||c.n>1,paid=inv?paidOf(x):0;
  const rows=it.map((i,n)=>`<tr><td class="c">${n+1}.</td><td class="ds">${esc(i.d)}</td><td class="c">${esc(i.u)}</td><td class="c">${fmt(i.q)}</td><td class="n">${fmt(i.r)}</td><td class="n">${fmt(nz(i.q)*nz(i.r))}</td></tr>`).join('');
  const tr=(l,v,b)=>`<tr><td colspan="5" class="n"${b?' style="font-weight:700"':''}>${l}</td><td class="n"${b?' style="font-weight:700"':''}>${v}</td></tr>`;
- const tot=c.gm=='add'?tr('Sub Total',fmt(c.sub))+tr('GST @ '+c.g+'%',fmt(c.ga))+tr('Grand Total (₹)',fmt(c.tot),1):(c.n>1?tr('Total (₹)',fmt(c.sub),1):'');
- const ft=x.forText!=null?x.forText:'For Intech Engineers',stl=x.signTitle!=null?x.signTitle:'Authorised Signatory';
+ const taxRows=(inv&&x.gstType!='inter')?tr('CGST @ '+c.g/2+'%',fmt(c.ga/2))+tr('SGST @ '+c.g/2+'%',fmt(c.ga/2)):tr((inv?'IGST':'GST')+' @ '+c.g+'%',fmt(c.ga));
+ let tot=(inv||c.gm=='add')?tr('Sub Total',fmt(c.sub))+taxRows+tr('Grand Total (₹)',fmt(c.tot),1):(c.n>1?tr('Total (₹)',fmt(c.sub),1):'');
+ if(inv&&paid>0)tot+=tr('Amount received (₹)',fmt(paid))+tr('Balance due (₹)',fmt(Math.max(0,c.tot-paid)),1);
+ const ft=x.forText!=null?x.forText:'For Intech Engineers',stl=x.signTitle!=null?x.signTitle:'Authorised Signatory',mg=db.set.mygst,mp=db.set.mypan;
+ const head=inv?`<div class="rt"><span><b>Invoice No:</b> ${esc(x.no)}</span><span><b>Date:</b> ${esc(fd(x.date))}</span></div><div class="rt"><span>${mg?'GSTIN: '+esc(mg):''}${mg&&mp?' &nbsp;|&nbsp; ':''}${mp?'PAN: '+esc(mp):''}</span><span>${x.due?'<b>Due date:</b> '+esc(fd(x.due)):''}</span></div>`:`<div class="rt"><span>${x.no?'Ref: '+esc(x.no):''}</span><span>Date: ${esc(fd(x.date))}</span></div>`;
+ const bank=inv&&db.set.bank?`<div class="tc"><b>Bank details for payment:</b><div style="white-space:pre-line;font-size:10.5pt">${esc(db.set.bank)}</div></div>`:'';
  return `<div class="pg">${full?`<img class="lhbg" src="${lh.img}" alt="">`:''}<div class="pc" style="padding-top:${pt}mm">${lh&&!full?`<img class="lhb" src="${lh.img}" alt="">`:''}
-<div class="rt"><span>${x.no?'Ref: '+esc(x.no):''}</span><span>Date: ${esc(fd(x.date))}</span></div>
-<div class="qt">QUOTATION</div>
-${x.to?`<div class="to">To,<br>${nl(x.to)}</div>`:''}${x.subject?`<div class="sj">Subject: ${esc(x.subject)}</div>`:''}
+${head}
+<div class="qt">${inv?'TAX INVOICE':'QUOTATION'}</div>
+${x.to?`<div class="to">${inv?'Bill To,':'To,'}<br>${nl(x.to)}</div>`:''}${x.subject?`<div class="sj">Subject: ${esc(x.subject)}</div>`:''}
 <table><tr><th style="width:9%">S.No.</th><th>Description of Item</th><th style="width:9%">Unit</th><th style="width:10%">Quantity</th><th style="width:13%">Rate (₹)</th><th style="width:14%">Amount (₹)</th></tr>${rows}${tot}</table>
 ${showTot?`<div class="wd"><b>Amount in words:</b> ${esc(inWords(c.tot))}</div>`:''}
+${bank}
 ${tl.length?`<div class="tc"><b>Terms &amp; Conditions:</b><ol>${tl.map(t=>`<li>${esc(t)}</li>`).join('')}</ol></div>`:''}
 <div class="sig"><div class="sgb"><div>${esc(ft)}</div><div class="sgm">${sts.map(a=>`<img class="stp" src="${a.img}" alt="">`).join('')}${sgs.map(a=>`<img class="sgn" src="${a.img}" alt="">`).join('')}</div>${x.signName?`<div><b>${esc(x.signName)}</b></div>`:''}${stl?`<div>(${esc(stl)})</div>`:''}</div></div>
 </div></div>`}
 function printQuote(x){
- if(typeof x!='object')x=db.quotes.find(a=>a.id==x);if(!x)return;
+ if(typeof x!='object')x=db.quotes.find(a=>a.id==x)||db.invoices.find(a=>a.id==x);if(!x)return;
  const w=window.open('','_blank');if(!w){alert('Please allow pop-ups for this site to print.');return}
  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Quotation-${esc(String(x.no||'').replace(/[\\/:*?"<>|]/g,'-'))}</title><style>@page{size:A4;margin:12mm 14mm}html,body{margin:0;background:#fff}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}${QCSS}.pg{width:auto;min-height:0;padding:0;overflow:visible}.pg .lhbg{top:-12mm;left:-14mm}</style></head><body>${quoteDoc(x)}<script>window.onload=function(){setTimeout(function(){print()},400)}<\/script></body></html>`);w.document.close()}
 function qTerms(){qe.terms=[...db.set.tc.filter(t=>qe.tsel.includes(t.id)).map(t=>t.text),...qe.tx]}
-function qNew(){qe={id:uid(),_new:1,no:qNext(),date:iso(),client:'',to:'',subject:'',items:[{d:'',u:'Nos',q:1,r:''}],gst:18,gstMode:'extra',status:'Draft',lh:(db.set.lh[0]||{}).id||'',sg:[],st:[],forText:db.set.qfor??'For Intech Engineers',signName:db.set.qsn??'',signTitle:db.set.qst??'Authorised Signatory',tsel:db.set.tc.filter(t=>t.pre).map(t=>t.id),tx:[]};qTerms();qv='edit';draw();scrollTo(0,0)}
-function qOpen(id){const o=db.quotes.find(a=>a.id==id);if(!o)return;qe=JSON.parse(JSON.stringify(o));qe.items=qItems(qe).map(i=>({...i}));if(!qe.gstMode)qe.gstMode='add';if(qe.gst==null||qe.gst==='')qe.gst=18;qe.sg=qArr(qe.sg);qe.st=qArr(qe.st);if(!Array.isArray(qe.tsel))qe.tsel=[];if(!Array.isArray(qe.tx))qe.tx=[];if(!Array.isArray(qe.terms))qe.terms=[];if(qe.to==null)qe.to=qe.client?clientName(qe.client):'';if(qe.forText==null)qe.forText='For Intech Engineers';if(qe.signTitle==null)qe.signTitle='Authorised Signatory';if(qe.signName==null)qe.signName='';qe.subject=qe.subject||'';qv='edit';draw();scrollTo(0,0)}
+function qNew(k){const inv=k=='i';qe={id:uid(),_new:1,_st0:'',k:inv?'i':'q',no:qNext(k),date:iso(),client:'',to:'',subject:'',items:[{d:'',u:'Nos',q:1,r:''}],gst:18,gstMode:inv?'add':'extra',gstType:'intra',due:inv?addDays(nz(db.set.duedays)||15):'',status:'Draft',lh:(db.set.lh[0]||{}).id||'',sg:[],st:[],forText:db.set.qfor??'For Intech Engineers',signName:db.set.qsn??'',signTitle:db.set.qst??'Authorised Signatory',tsel:inv?[]:db.set.tc.filter(t=>t.pre).map(t=>t.id),tx:[]};qTerms();qv='edit';draw();scrollTo(0,0)}
+function qOpen(id,k){const o=(k=='i'?db.invoices:db.quotes).find(a=>a.id==id);if(!o)return;qe=JSON.parse(JSON.stringify(o));qe.k=k=='i'?'i':'q';qe._st0=o.status||'';if(qe.k=='i'){qe.gstMode='add';if(!qe.gstType)qe.gstType=gstTypeFor(qe.client);if(!qe.due)qe.due=''}qe.items=qItems(qe).map(i=>({...i}));if(!qe.gstMode)qe.gstMode='add';if(qe.gst==null||qe.gst==='')qe.gst=18;qe.sg=qArr(qe.sg);qe.st=qArr(qe.st);if(!Array.isArray(qe.tsel))qe.tsel=[];if(!Array.isArray(qe.tx))qe.tx=[];if(!Array.isArray(qe.terms))qe.terms=[];if(qe.to==null)qe.to=qe.client?clientName(qe.client):'';if(qe.forText==null)qe.forText='For Intech Engineers';if(qe.signTitle==null)qe.signTitle='Authorised Signatory';if(qe.signName==null)qe.signName='';qe.subject=qe.subject||'';qv='edit';draw();scrollTo(0,0)}
 function qSave(){const x=qe;x.items=x.items.filter(i=>String(i.d||'').trim()||String(i.r??'')!=='');
  if(!x.items.length){x.items=[{d:'',u:'Nos',q:1,r:''}];alert('Add at least one item (description and rate).');return false}
- const c=qCalc(x),o=JSON.parse(JSON.stringify(x));['_new','_d','_auto'].forEach(k=>delete o[k]);o.amount=c.sub;o.item=o.items[0].d;o.gst=nz(o.gst);
- const i=db.quotes.findIndex(a=>a.id==o.id);if(i<0)db.quotes.push(o);else db.quotes[i]=o;save();return true}
+ const c=qCalc(x),o=JSON.parse(JSON.stringify(x)),coll=x.k=='i'?db.invoices:db.quotes;['_new','_d','_auto','_st0'].forEach(k=>delete o[k]);o.amount=c.sub;o.item=o.items[0].d;o.gst=nz(o.gst);
+ const i=coll.findIndex(a=>a.id==o.id),old=coll[i];if(old)['pay','pid','inv','fu'].forEach(k=>{if(old[k]!==undefined)o[k]=old[k]});
+ if(i<0)coll.push(o);else coll[i]=o;save();return true}
 const qOpts=(a,v,n)=>`<option value="">${n}</option>`+a.map(i=>`<option value="${esc(i.id)}"${i.id==v?' selected':''}>${esc(i.name)}</option>`).join('');
 const qItemsHtml=()=>qe.items.map((i,n)=>`<div class="qi"><div class="qih"><b>Item ${n+1}</b>${qe.items.length>1?`<button class="btn g s r" data-qri="${n}">Remove</button>`:''}</div><textarea data-qi="${n}:d" rows="3" placeholder="Description of work">${esc(i.d)}</textarea><div class="g4"><div><label>Unit</label><input data-qi="${n}:u" value="${esc(i.u)}"></div><div><label>Quantity</label><input type="number" step="any" data-qi="${n}:q" value="${esc(i.q)}"></div><div><label>Rate (₹)</label><input type="number" step="any" data-qi="${n}:r" value="${esc(i.r)}"></div><div><label>Amount</label><input readonly data-qa="${n}" value="${fmt(nz(i.q)*nz(i.r))}"></div></div></div>`).join('');
 const qTermsHtml=()=>{const g={};db.set.tc.forEach(t=>(g[t.c||'Other']=g[t.c||'Other']||[]).push(t));
  return Object.keys(g).map(c=>`<div class="tg"><div class="tgh">${esc(c)}</div>${g[c].map(t=>`<label class="tk"><input type="checkbox" data-qt="${esc(t.id)}"${qe.tsel.includes(t.id)?' checked':''}><span>${esc(t.text)}${t.pre?' <em title="Pre-selected for new quotations">★</em>':''}</span></label>`).join('')}</div>`).join('')+(qe.tx.length?`<div class="tg"><div class="tgh">Custom (this quotation only)</div>${qe.tx.map((t,n)=>`<label class="tk"><input type="checkbox" checked data-qx="${n}"><span>${esc(t)}</span></label>`).join('')}</div>`:'')};
 const qPick=k=>`<label>${k=='sg'?'Signatures':'Company stamps'} <span class="mu">(tick one or more)</span></label><div class="pk">${db.set[k].map(a=>`<label class="pki"><input type="checkbox" data-qp="${k}|${a.id}"${qArr(qe[k]).includes(a.id)?' checked':''}><img src="${a.img}" alt=""><span>${esc(a.name)}</span></label>`).join('')||'<span class="mu">None added yet — add one below.</span>'}</div><div style="margin-top:8px"><span class="mu">Add new ${k=='sg'?'signature':'stamp'}: </span><input type="file" accept="image/*" id="qa_${k}" style="max-width:260px"></div>`;
 function qEdit(){const x=qe;
- return `<div class="top"><h2>${x._new?'New quotation':'Edit quotation'}</h2><button class="btn g" data-qb>← Back</button><button class="btn g" data-qcp>Duplicate</button><button class="btn g" data-qpr>🖨 Print / PDF</button><button class="btn" data-qsv>Save</button></div>
+ return `<div class="top"><h2>${x.k=='i'?(x._new?'New invoice':'Edit invoice'):(x._new?'New quotation':'Edit quotation')}</h2><button class="btn g" data-qb>← Back</button><button class="btn g" data-qcp>Duplicate</button>${x._new?'':x.k=='i'?'<button class="btn g" data-qpay>💳 Payments</button>':'<button class="btn g" data-qinv>🧾 Make invoice</button>'}<button class="btn g" data-qpr>🖨 Print / PDF</button><button class="btn" data-qsv>Save</button></div>
 <div class="qg"><div class="qf" id="qf">
 <div class="card"><b>Letterhead, signature &amp; stamp</b>
 <label>Letterhead</label><select data-q="lh">${qOpts(db.set.lh,x.lh,'— No letterhead —')}</select>
@@ -569,9 +596,9 @@ ${db.set.lh.length&&db.set.sg.length&&db.set.st.length?'':'<p class="mu">Add let
 <label>Client</label><select data-q="client">${qOpts(db.clients.map(c=>({id:c.id,name:c.name})),x.client,'— Select client (optional) —')}</select>
 <label>To (address block)</label><textarea data-q="to" rows="4" placeholder="Executive Engineer&#10;North Roads Division&#10;Delhi-110054">${esc(x.to)}</textarea>
 <label>Subject</label><textarea data-q="subject" rows="2" placeholder="Subject of the quotation">${esc(x.subject)}</textarea>
-<label>Status</label><select data-q="status">${['Draft','Sent','Accepted','Rejected','Paid'].map(s=>`<option${s==x.status?' selected':''}>${s}</option>`).join('')}</select></div>
-<div class="card"><b>Items</b><div id="qit">${qItemsHtml()}</div><p><button class="btn g s" data-qai>+ Add item</button></p>
-<div class="g2"><div><label>GST</label><select data-q="gstMode"><option value="add"${x.gstMode=='add'?' selected':''}>Add GST to the total</option><option value="extra"${x.gstMode=='extra'?' selected':''}>GST extra (not added)</option><option value="none"${x.gstMode=='none'?' selected':''}>No GST</option></select></div><div><label>GST %</label><input type="number" step="any" data-q="gst" value="${esc(x.gst)}"></div></div></div>
+${x.k=='i'?`<label>Due date</label><input type="date" data-q="due" value="${esc(x.due||'')}">`:`<label>Status</label><select data-q="status">${['Draft','Sent','Accepted','Rejected','Paid'].map(s=>`<option${s==x.status?' selected':''}>${s}</option>`).join('')}</select>`}</div>
+<div class="card"><b>Items</b><div id="qit">${qItemsHtml()}</div><p><button class="btn g s" data-qai>+ Add item</button> ${db.rates.length?`<select id="qrl" style="width:auto;max-width:100%"><option value="">+ Add from saved rates…</option>${db.rates.map(r=>`<option value="${esc(r.id)}">${esc(String(r.d).split('\n')[0].slice(0,60))} — ${esc(r.u)} ₹${fmt(r.r)}</option>`).join('')}</select>`:''}</p>
+<div class="g2"><div>${x.k=='i'?`<label>GST type</label><select data-q="gstType"><option value="intra"${x.gstType!='inter'?' selected':''}>CGST + SGST (same state)</option><option value="inter"${x.gstType=='inter'?' selected':''}>IGST (other state)</option></select>`:`<label>GST</label><select data-q="gstMode"><option value="add"${x.gstMode=='add'?' selected':''}>Add GST to the total</option><option value="extra"${x.gstMode=='extra'?' selected':''}>GST extra (not added)</option><option value="none"${x.gstMode=='none'?' selected':''}>No GST</option></select>`}</div><div><label>GST %</label><input type="number" step="any" data-q="gst" value="${esc(x.gst)}"></div></div></div>
 <div class="card"><b>Terms &amp; conditions</b><p class="mu" style="margin:4px 0 8px">Tick the conditions you want on this quotation. ★ = pre-selected for every new quotation (change in setup).</p>
 <p style="margin:0 0 6px"><button class="btn g s" data-qta="def">★ Pre-selected only</button> <button class="btn g s" data-qta="all">Select all</button> <button class="btn g s" data-qta="none">Clear all</button></p>
 <div id="qtm">${qTermsHtml()}</div>
@@ -581,7 +608,7 @@ ${db.set.lh.length&&db.set.sg.length&&db.set.st.length?'':'<p class="mu">Add let
 </div><div class="qp"><b class="mu">Live preview (A4)</b><div id="qpv"></div></div></div>`}
 function qPreview(){const b=$('#qpv');if(!b||!qe)return;b.innerHTML=`<div class="pvw"><div class="pvs">${quoteDoc(qe)}</div></div>`;b.querySelectorAll('img').forEach(i=>i.onload=qFit);qFit()}
 function qFit(){const b=$('#qpv');if(!b)return;const w=b.clientWidth,k=Math.min(1,w/794),s=b.querySelector('.pvs');if(!s)return;s.style.transform=`scale(${k})`;s.style.transformOrigin='0 0';b.firstChild.style.height=(s.firstChild.offsetHeight*k)+'px'}
-window.addEventListener('resize',()=>{if(qv=='edit'&&view=='quotes')qFit()});
+window.addEventListener('resize',()=>{if(qv=='edit'&&(view=='quotes'||view=='invoices'))qFit()});
 function qSetup(){
  const asset=(k,t,hint,cut)=>`<div class="card"><b>${t}</b><p class="mu">${hint}</p>${db.set[k].map(a=>`<div class="as"><img src="${a.img}" class="${k=='lh'?'asl':'ass'}" alt=""><div class="asi"><input data-as="${k}|${a.id}|name" value="${esc(a.name)}" placeholder="Name">${k=='lh'&&a.full?`<label>Top space before text (mm) — full-page letterhead</label><input type="number" data-as="${k}|${a.id}|pt" value="${esc(a.pt)}">`:''}</div><button class="btn g s r" data-asd="${k}|${a.id}">Delete</button></div>`).join('')||'<p class="mu">Nothing added yet.</p>'}
 <label>Add new — name (optional)</label><input id="an_${k}" placeholder="${k=='lh'?'e.g. Intech Engineers':k=='sg'?'e.g. Authorised signatory':'e.g. Company stamp'}">
@@ -593,6 +620,8 @@ ${cut?`<label class="tk" style="margin-top:8px"><input type="checkbox" id="ac_${
 <div class="row2">${asset('lh','Letterheads','Upload your company letterhead image. A wide header (like your Intech header) goes at the top of the page; a full A4 letterhead is used as the page background. You can add many.',0)}
 <div>${asset('sg','Signatures','Upload a photo/scan of the signature on white paper.',1)}<div style="height:14px"></div>${asset('st','Company stamps','Upload a photo/scan of the stamp on white paper.',1)}</div></div>
 <div class="card" style="margin-top:14px"><b>Defaults for new quotations</b><div class="g3"><div><label>Line above signature</label><input data-qd="qfor" value="${esc(db.set.qfor??'For Intech Engineers')}"></div><div><label>Signatory name</label><input data-qd="qsn" value="${esc(db.set.qsn??'')}"></div><div><label>Designation</label><input data-qd="qst" value="${esc(db.set.qst??'Authorised Signatory')}"></div></div></div>
+<div class="card" style="margin-top:14px"><b>Invoice &amp; follow-up settings</b><div class="g3"><div><label>Your GSTIN</label><input data-qd="mygst" value="${esc(db.set.mygst??'')}"></div><div><label>Your PAN</label><input data-qd="mypan" value="${esc(db.set.mypan??'')}"></div><div><label>Invoice due in (days)</label><input type="number" data-qd="duedays" value="${esc(db.set.duedays??15)}"></div></div><div class="g2"><div><label>Bank details (printed on invoices)</label><textarea data-qd="bank" rows="4" placeholder="Bank name&#10;A/c no.&#10;IFSC&#10;Branch">${esc(db.set.bank??'')}</textarea></div><div><label>Follow up quotations after (days)</label><input type="number" data-qd="fudays" value="${esc(db.set.fudays??5)}"><p class="mu">A sent quotation with no reply appears on the Dashboard after this many days.</p></div></div></div>
+<div class="card" style="margin-top:14px"><b>Saved items &amp; rates</b><p class="mu">Items you quote often. In a quotation or invoice choose “Add from saved rates”.</p>${db.rates.map(r=>`<div class="tr2"><textarea data-rt="${esc(r.id)}|d" rows="2">${esc(r.d)}</textarea><div class="trr"><input data-rt="${esc(r.id)}|u" value="${esc(r.u)}" style="max-width:100px" placeholder="Unit"><input type="number" step="any" data-rt="${esc(r.id)}|r" value="${esc(r.r)}" style="max-width:160px" placeholder="Rate ₹"><button class="btn g s r" data-rtd="${esc(r.id)}">Delete</button></div></div>`).join('')||'<p class="mu">No saved items yet.</p>'}<hr style="border:0;border-top:1px solid var(--bd);margin:14px 0"><b>Add a saved item</b><label>Description</label><textarea id="rn_d" rows="2"></textarea><div class="g2"><div><label>Unit</label><input id="rn_u" value="Nos"></div><div><label>Rate (₹)</label><input id="rn_r" type="number" step="any"></div></div><p><button class="btn" data-rtadd>+ Add item</button></p></div>
 <div class="card" style="margin-top:14px"><b>Terms &amp; conditions library</b><p class="mu">Edit the wording, tick ★ to pre-select a condition on every new quotation, or delete what you never use.</p>
 ${tcs.map(c=>`<div class="tgh" style="margin-top:14px">${esc(c)}</div>${g[c].map(t=>`<div class="tr2"><textarea data-tt="${esc(t.id)}" rows="2">${esc(t.text)}</textarea><div class="trr"><label class="tk"><input type="checkbox" data-tp="${esc(t.id)}"${t.pre?' checked':''}><span>★ Pre-selected</span></label><input data-tcat="${esc(t.id)}" value="${esc(t.c)}" list="tcl" style="max-width:220px" title="Category"><button class="btn g s r" data-td="${esc(t.id)}">Delete</button></div></div>`).join('')}`).join('')}
 <datalist id="tcl">${tcs.map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
@@ -600,20 +629,23 @@ ${tcs.map(c=>`<div class="tgh" style="margin-top:14px">${esc(c)}</div>${g[c].map
 <label>Condition</label><textarea id="nt_t" rows="2" placeholder="Type the condition…"></textarea><div class="g2"><div><label>Category</label><input id="nt_c" list="tcl" placeholder="e.g. Payment Terms"></div><div><label>&nbsp;</label><label class="tk"><input type="checkbox" id="nt_p"><span>★ Pre-select for new quotations</span></label></div></div>
 <p><button class="btn" data-tadd>+ Add condition</button> <button class="btn g" data-tbi>Restore built-in conditions</button></p></div></div>`}
 function quotesView(){
- if(qv=='edit'&&qe)return qEdit();if(qv=='setup')return qSetup();
+ if(qv=='edit'&&qe&&qe.k!='i')return qEdit();if(qv=='setup')return qSetup();
  return listView('quotes').replace('<button class="btn" data-add="quotes">','<button class="btn g" data-qs>⚙ Letterheads, stamps &amp; terms</button><button class="btn" data-add="quotes">')}
 function qBind(){
  const on=(s,f)=>R.querySelectorAll(s).forEach(e=>e.onclick=()=>f(e));
- if(qv=='list'){on('[data-qs]',()=>{qv='setup';draw()});return}
+ if(qv=='list'||(qv=='edit'&&!$('#qf'))){on('[data-qs]',()=>{qv='setup';draw()});return}
  if(qv=='setup'){const s=$('#qs');if(!s)return;
   s.onchange=e=>{const t=e.target,d=t.dataset;
    if(d.as){const[k,id,f]=d.as.split('|'),a=db.set[k].find(z=>z.id==id);if(a){a[f]=f=='pt'?nz(t.value):t.value;save()}}
    else if(d.tt){const a=db.set.tc.find(z=>z.id==d.tt);if(a){a.text=t.value;save()}}
    else if(d.tp){const a=db.set.tc.find(z=>z.id==d.tp);if(a){a.pre=t.checked?1:0;save()}}
    else if(d.tcat){const a=db.set.tc.find(z=>z.id==d.tcat);if(a){a.c=t.value.trim()||'Other';save();draw()}}
-   else if(d.qd){db.set[d.qd]=t.value;save()}};
+   else if(d.qd){db.set[d.qd]=t.value;save()}
+   else if(d.rt){const[id,f]=d.rt.split('|'),a=db.rates.find(z=>z.id==id);if(a){a[f]=f=='r'?nz(t.value):t.value;save()}}};
   s.onclick=e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
    if(d.qb2!==undefined){qv='list';draw()}
+   else if(d.rtd){if(confirm('Delete this saved item?')){db.rates=db.rates.filter(z=>z.id!=d.rtd);save();draw()}}
+   else if(d.rtadd!==undefined){const t=$('#rn_d').value.trim();if(!t){alert('Type the description first.');return}db.rates.push({id:uid(),d:t,u:$('#rn_u').value.trim()||'Nos',r:nz($('#rn_r').value)});save();draw()}
    else if(d.asd){const[k,id]=d.asd.split('|');if(confirm('Delete this image?')){db.set[k]=db.set[k].filter(z=>z.id!=id);save();draw()}}
    else if(d.td){if(confirm('Delete this condition from the library?')){db.set.tc=db.set.tc.filter(z=>z.id!=d.td);save();draw()}}
    else if(d.tadd!==undefined){const t=$('#nt_t').value.trim();if(!t){alert('Type the condition first.');return}db.set.tc.push({id:'c'+uid(),c:$('#nt_c').value.trim()||'Custom',text:t,pre:$('#nt_p').checked?1:0});save();draw()}
@@ -627,8 +659,9 @@ function qBind(){
   let tm;const upd=()=>{clearTimeout(tm);tm=setTimeout(qPreview,150)},rt=()=>{$('#qtm').innerHTML=qTermsHtml()};
   const h=e=>{const t=e.target,d=t.dataset;
    if(d.q){qe[d.q]=t.value;qe._d=1;
-    if(d.q=='client'){const c=db.clients.find(a=>a.id==t.value);if(c&&(!qe.to||qe.to==qe._auto)){qe._auto=qe.to=c.name+(c.city?'\n'+c.city:'');f.querySelector('[data-q="to"]').value=qe.to}}
+    if(d.q=='client'){const c=db.clients.find(a=>a.id==t.value);if(c&&(!qe.to||qe.to==qe._auto)){qe._auto=qe.to=c.name+(c.city?'\n'+c.city:'')+(c.gst?'\nGSTIN: '+c.gst:'')+(c.pan?'\nPAN: '+c.pan:'');f.querySelector('[data-q="to"]').value=qe.to}if(qe.k=='i'&&c){qe.gstType=gstTypeFor(c.id);const gt=f.querySelector('[data-q="gstType"]');if(gt)gt.value=qe.gstType}}
     upd()}
+   else if(t.id=='qrl'){if(t.value){const r=db.rates.find(z=>z.id==t.value);if(r){qe.items=qe.items.filter(i=>String(i.d||'').trim()||String(i.r??'')!=='');qe.items.push({d:r.d,u:r.u||'Nos',q:1,r:r.r});$('#qit').innerHTML=qItemsHtml();qe._d=1;qPreview()}t.value=''}}
    else if(d.qp){const[k,id]=d.qp.split('|'),a=qArr(qe[k]).slice(),i=a.indexOf(id);if(t.checked&&i<0)a.push(id);if(!t.checked&&i>=0)a.splice(i,1);qe[k]=a;qe._d=1;upd()}
    else if(d.qi){const[n,k]=d.qi.split(':');qe.items[n][k]=t.value;qe._d=1;const a=f.querySelector(`[data-qa="${n}"]`);if(a)a.value=fmt(nz(qe.items[n].q)*nz(qe.items[n].r));upd()}
    else if(d.qt){const s=qe.tsel,i=s.indexOf(d.qt);if(t.checked&&i<0)s.push(d.qt);if(!t.checked&&i>=0)s.splice(i,1);qe._d=1;qTerms();upd()}
@@ -644,19 +677,175 @@ function qBind(){
    else if(d.qta){qe.tsel=d.qta=='all'?db.set.tc.map(t=>t.id):d.qta=='def'?db.set.tc.filter(t=>t.pre).map(t=>t.id):[];qe._d=1;qTerms();rt();qPreview()}
    else if(d.qcx!==undefined){const v=$('#qcx').value.trim();if(!v)return;if($('#qcs').checked){const id='c'+uid();db.set.tc.push({id,c:'Custom',text:v,pre:0});qe.tsel.push(id);save()}else qe.tx.push(v);qe._d=1;qTerms();rt();$('#qcx').value='';qPreview()}});
   on('[data-qb]',()=>{if(qe._d&&!confirm('Discard unsaved changes?'))return;qv='list';qe=null;draw()});
-  on('[data-qsv]',()=>{if(qSave()){qv='list';qe=null;draw()}});
+  on('[data-qsv]',()=>{if(qSave()){const q0=qe;qv='list';qe=null;draw();if(q0.k!='i'&&q0.status=='Accepted'&&q0._st0!='Accepted'){const r=db.quotes.find(a=>a.id==q0.id);if(r&&!r.pid&&confirm('Create a project for this accepted quotation?'))mkProject({name:(r.subject||qItems(r)[0].d||'Project').split('\n')[0].slice(0,100),client:r.client,budget:qCalc(r).sub,qid:r.id},r)}}});
+  on('[data-qinv]',()=>{if(qSave()){const id=qe.id;qe=null;qv='list';toInvoice(id)}});
+  on('[data-qpay]',()=>{if(qSave())ledger('invoices',qe.id,'pay')});
   on('[data-qpr]',()=>printQuote(qe));
-  on('[data-qcp]',()=>{qe=JSON.parse(JSON.stringify(qe));qe.id=uid();qe._new=1;qe._d=1;qe.no=qNext();qe.status='Draft';draw();scrollTo(0,0)})}
+  on('[data-qcp]',()=>{qe=JSON.parse(JSON.stringify(qe));qe.id=uid();qe._new=1;qe._d=1;qe.no=qNext(qe.k);qe.status='Draft';['pay','pid','inv','fu','qid'].forEach(k=>delete qe[k]);qe._st0='';draw();scrollTo(0,0)})}
 }
 
-const NAV=[['dash','📊','Dashboard'],['clients','👥','Clients'],['tenders','📑','Tenders'],['ai','🤖','AI Assistant'],['projects','🏗','Projects'],['quotes','🧾','Quotations'],['tasks','✅','Tasks'],['team','⚙','Settings']];
+/* ===== EXTRA MODULES: invoices, payments, costs, follow-ups, statements, reports, field log, checklist, sharing ===== */
+const addDays=n=>{const d=new Date();d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const paidOf=r=>qArr(r.pay).reduce((s,p)=>s+nz(p.amt),0);
+const spentOf=r=>qArr(r.exp).reduce((s,p)=>s+nz(p.amt),0);
+const balOf=r=>Math.max(0,quoteTotal(r)-paidOf(r));
+function payStatus(r){const t=quoteTotal(r),p=paidOf(r);if(t>0&&p>=t-0.5)return 'Paid';if(r.due&&dleft(r.due)<0)return 'Overdue';return p>0?'Partial':'Unpaid'}
+const clientOf=r=>db.clients.find(c=>c.id==r.client)||{};
+const waNum=p=>{let d=String(p||'').replace(/\D/g,'');if(d.length==10)d='91'+d;return d};
+const waLink=(p,t)=>'https://wa.me/'+waNum(p)+'?text='+encodeURIComponent(t);
+const gstTypeFor=cid=>{const c=db.clients.find(a=>a.id==cid),my=String(db.set.mygst||'07').slice(0,2);return c&&c.gst&&String(c.gst).slice(0,2)!=my?'inter':'intra'};
+const coName=()=>String(db.set.qfor||'For Intech Engineers').replace(/^For\s+/i,'');
+function docMsg(r,type){
+ const c=clientOf(r),nm=c.contact||c.name||(r.to||'').split('\n')[0]||'Sir/Madam',cc=qCalc(r),what=(r.subject||qItems(r)[0].d||'').split('\n')[0].slice(0,120),sign='\n\nRegards,\n'+coName();
+ if(type=='fu')return `Dear ${nm},\n\nThis is a gentle follow-up on our quotation ${r.no} dated ${fd(r.date)} for ${what} (${inr(cc.tot)}). Please let us know if you need any clarification or would like us to proceed.`+sign;
+ if(type=='pr')return `Dear ${nm},\n\nThis is a gentle reminder that invoice ${r.no} dated ${fd(r.date)} has a pending balance of ${inr(balOf(r))}${r.due?' (due date '+fd(r.due)+')':''}. Kindly arrange the payment at the earliest.`+sign;
+ if(r.k=='i')return `Dear ${nm},\n\nPlease find attached our invoice ${r.no} dated ${fd(r.date)} for ${what}.\nAmount: ${inr(cc.tot)}${r.due?'\nDue date: '+fd(r.due):''}\n\n(PDF attached)`+sign;
+ return `Dear ${nm},\n\nPlease find attached our quotation ${r.no} dated ${fd(r.date)} for ${what}.\nAmount: ${inr(cc.tot)}${cc.gm=='add'?' (incl. GST)':cc.gm=='extra'?' + GST as applicable':''}\n\nKindly confirm. (PDF attached)`+sign}
+function xShare(kind,id,how,type){
+ const r=(kind=='i'?db.invoices:db.quotes).find(a=>a.id==id);if(!r)return;const c=clientOf(r),txt=docMsg(r,type||kind);
+ if(how=='wa'){if(!c.phone&&!confirm('This client has no phone number saved. Open WhatsApp anyway so you can pick the contact?'))return;window.open(waLink(c.phone,txt),'_blank')}
+ else window.open('mailto:'+encodeURIComponent(c.email||'')+'?subject='+encodeURIComponent((type=='fu'?'Follow-up: quotation ':type=='pr'?'Payment reminder: invoice ':kind=='i'?'Invoice ':'Quotation ')+(r.no||''))+'&body='+encodeURIComponent(txt),'_self');
+ toast('Message opened — attach the saved PDF before sending')}
+function mkProject(o,src){const p={id:uid(),name:o.name||'New project',client:o.client||'',budget:o.budget||'',progress:0,deadline:'',status:'Planning',qid:o.qid||'',tid:o.tid||''};db.projects.push(p);if(src)src.pid=p.id;save();toast('✔ Project created');view='projects';draw()}
+function setQStatus(id,st){const q=db.quotes.find(x=>x.id==id);if(!q)return;q.status=st;q.fu=iso();save();draw();
+ if(st=='Accepted'&&!q.pid&&confirm('Create a project for this accepted quotation?'))mkProject({name:(q.subject||qItems(q)[0].d||'Project').split('\n')[0].slice(0,100),client:q.client,budget:qCalc(q).sub,qid:q.id},q)}
+function toInvoice(id){const q=db.quotes.find(a=>a.id==id);if(!q)return;
+ let inv=q.inv&&db.invoices.find(a=>a.id==q.inv);
+ if(!inv){inv={id:uid(),k:'i',no:qNext('i'),date:iso(),due:addDays(nz(db.set.duedays)||15),client:q.client||'',to:q.to||'',subject:q.subject||'',items:qItems(q).map(i=>({...i})),gst:q.gst==null||q.gst===''?18:q.gst,gstMode:'add',gstType:gstTypeFor(q.client),lh:q.lh||'',sg:qArr(q.sg),st:qArr(q.st),forText:q.forText,signName:q.signName,signTitle:q.signTitle,tsel:[],tx:[],terms:[],qid:q.id,pay:[]};
+  inv.amount=qCalc(inv).sub;inv.item=inv.items[0].d;db.invoices.push(inv);q.inv=inv.id;save()}
+ view='invoices';qOpen(inv.id,'i')}
+function xMore(m,id,v){
+ if(!v)return;const r=db[m].find(a=>a.id==id);if(!r)return;
+ if(v=='wa'||v=='em')return xShare(m=='invoices'?'i':'q',id,v);
+ if(v=='rem')return xShare('i',id,'wa','pr');
+ if(v=='inv')return toInvoice(id);
+ if(v=='prj')return mkProject({name:(r.subject||qItems(r)[0].d||'Project').split('\n')[0].slice(0,100),client:r.client,budget:qCalc(r).sub,qid:r.id},r);
+ if(v=='acc')return setQStatus(id,'Accepted');if(v=='rej')return setQStatus(id,'Rejected')}
+function rowActs(m,r){
+ const sel=o=>`<select class="xm" data-xm="${m}|${r.id}"><option value="">⋯ More</option>${o.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select> `;
+ if(m=='quotes')return `<button class="btn g s" data-pr="${r.id}">Print</button> `+sel([['wa','💬 Send on WhatsApp'],['em','✉ Send by email'],['inv','🧾 Make invoice'],['prj','🏗 Create project'],['acc','✅ Mark accepted'],['rej','✖ Mark rejected']]);
+ if(m=='invoices')return `<button class="btn g s" data-pr="${r.id}">Print</button> <button class="btn g s" data-xa="pay|${r.id}">💳 Payments</button> `+sel([['wa','💬 WhatsApp invoice'],['rem','🔔 Payment reminder'],['em','✉ Send by email']]);
+ if(m=='clients')return `<button class="btn g s" data-xa="stmt|${r.id}">📄 Statement</button> `;
+ if(m=='projects')return `<button class="btn g s" data-xa="cost|${r.id}">💸 Costs</button> `;
+ if(m=='tenders'){const c=qArr(r.chk),d=c.filter(x=>x.d).length;return `<button class="btn g s" data-xa="chk|${r.id}" title="Documents checklist &amp; EMD">☑ ${c.length?d+'/'+c.length:'Docs'}</button> `}
+ return ''}
+/* ---- ledger dialog (payments received / project costs) ---- */
+const LG={
+ pay:{title:'Payments received',coll:'invoices',fields:[['date','Date','date'],['amt','Amount (₹)','number'],['mode','Mode','select',['Bank transfer / NEFT','Cheque','UPI','Cash','Other']],['note','Reference / note','text']],sum:r=>[['Invoice total',inr(quoteTotal(r))],['Received',inr(paidOf(r))],['Balance',inr(balOf(r))]]},
+ exp:{title:'Project costs',coll:'projects',fields:[['date','Date','date'],['cat','Category','select',['Staff / labour','Travel','Equipment / rent','Fuel','Pillars / materials','Software / data','Office','Other']],['desc','Description','text'],['amt','Amount (₹)','number']],sum:r=>[['Budget',inr(r.budget)],['Spent',inr(spentOf(r))],['Profit',inr(nz(r.budget)-spentOf(r))]]}};
+function ledger(coll,id,key){
+ const L=LG[key],r=db[coll].find(a=>a.id==id);if(!r)return;r[key]=qArr(r[key]).slice();
+ const dv=()=>({date:iso(),amt:key=='pay'?Math.round(balOf(r)*100)/100||'':''});
+ const render=()=>{D.innerHTML=`<h3 style="margin:0">${L.title} · ${esc(r.no||r.name)}</h3>
+ <div class="g3" style="margin:10px 0">${L.sum(r).map(([a,b])=>`<div class="card stat"><small>${a}</small><b>${b}</b></div>`).join('')}</div>
+ ${r[key].length?`<div class="tw"><table class="lt"><tr class="hd">${L.fields.map(f=>`<th>${f[1].split(' (')[0]}</th>`).join('')}<th></th></tr>${r[key].map((p,i)=>`<tr>${L.fields.map(([k])=>`<td>${k=='amt'?inr(p[k]):k=='date'?esc(fd(p[k])):esc(p[k]||'')}</td>`).join('')}<td><button class="btn g s r" data-ld="${i}">✕</button></td></tr>`).join('')}</table></div>`:'<p class="mu">Nothing recorded yet.</p>'}
+ <b style="display:block;margin-top:12px">Add</b><div class="g2">${L.fields.map(([k,l,t,o])=>`<div><label>${l}</label>${t=='select'?`<select id="l_${k}">${o.map(x=>`<option>${x}</option>`).join('')}</select>`:`<input id="l_${k}" type="${t}"${t=='number'?' step="any"':''} value="${esc(dv()[k]??'')}">`}</div>`).join('')}</div>
+ <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn g" id="lc">Close</button><button class="btn" id="la">+ Add</button></div>`;
+ $('#lc').onclick=()=>D.close();
+ $('#la').onclick=()=>{const p={};L.fields.forEach(([k])=>p[k]=$('#l_'+k).value);if(!nz(p.amt)){alert('Enter the amount.');return}p.id=uid();r[key].push(p);save();render();draw()};
+ D.querySelectorAll('[data-ld]').forEach(b=>b.onclick=()=>{if(confirm('Remove this entry?')){r[key].splice(+b.dataset.ld,1);save();render();draw()}})};
+ render();if(!D.open)D.showModal()}
+/* ---- printing helper + client statement ---- */
+function printDoc(title,html){const w=window.open('','_blank');if(!w){alert('Please allow pop-ups for this site to print.');return}
+ w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title><style>@page{size:A4;margin:12mm 14mm}html,body{margin:0;background:#fff}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}${QCSS}.pg{width:auto;min-height:0;padding:0;overflow:visible}</style></head><body>${html}<script>window.onload=function(){setTimeout(function(){print()},400)}<\/script></body></html>`);w.document.close()}
+function stmtDoc(cid,lhid){
+ const c=db.clients.find(a=>a.id==cid)||{},lh=db.set.lh.find(a=>a.id==lhid),I=db.invoices.filter(i=>i.client==cid).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+ let T=0,P=0;const rows=I.map(i=>{const t=quoteTotal(i),p=paidOf(i);T+=t;P+=p;return `<tr><td>${esc(i.no)}</td><td class="c">${esc(fd(i.date))}</td><td class="c">${esc(fd(i.due))}</td><td class="n">${fmt(t)}</td><td class="n">${fmt(p)}</td><td class="n">${fmt(Math.max(0,t-p))}</td><td class="c">${payStatus(i)}</td></tr>`}).join('');
+ return `<div class="pg">${lh&&!lh.full?`<img class="lhb" src="${lh.img}" alt="">`:''}<div class="rt"><span></span><span>Date: ${esc(fd(iso()))}</span></div><div class="qt">STATEMENT OF ACCOUNT</div>
+<div class="to"><b>${esc(c.name||'')}</b>${c.city?'<br>'+esc(c.city):''}${c.gst?'<br>GSTIN: '+esc(c.gst):''}${c.pan?'<br>PAN: '+esc(c.pan):''}</div>
+<table><tr><th>Invoice no.</th><th>Date</th><th>Due date</th><th>Amount (₹)</th><th>Received (₹)</th><th>Balance (₹)</th><th>Status</th></tr>${rows||'<tr><td colspan="7" class="c">No invoices yet.</td></tr>'}<tr><td colspan="3" class="n"><b>Total</b></td><td class="n"><b>${fmt(T)}</b></td><td class="n"><b>${fmt(P)}</b></td><td class="n"><b>${fmt(Math.max(0,T-P))}</b></td><td></td></tr></table>
+<div class="wd"><b>Total outstanding:</b> ${esc(inWords(Math.max(0,T-P)))}</div>
+${db.set.bank?`<div class="tc"><b>Bank details for payment:</b><div style="white-space:pre-line;font-size:10.5pt">${esc(db.set.bank)}</div></div>`:''}</div>`}
+function stmtDlg(cid){
+ const c=db.clients.find(a=>a.id==cid);if(!c)return;const I=db.invoices.filter(i=>i.client==cid);let T=0,P=0;I.forEach(i=>{T+=quoteTotal(i);P+=paidOf(i)});
+ D.innerHTML=`<h3 style="margin:0">Statement · ${esc(c.name)}</h3><div class="g3" style="margin:10px 0"><div class="card stat"><small>Billed</small><b>${inr(T)}</b></div><div class="card stat"><small>Received</small><b>${inr(P)}</b></div><div class="card stat"><small>Outstanding</small><b>${inr(Math.max(0,T-P))}</b></div></div>
+ ${I.length?`<div class="tw"><table class="lt"><tr class="hd"><th>Invoice</th><th>Date</th><th>Amount</th><th>Balance</th><th>Status</th></tr>${I.map(i=>`<tr><td>${esc(i.no)}</td><td>${esc(fd(i.date))}</td><td>${inr(quoteTotal(i))}</td><td>${inr(balOf(i))}</td><td>${payStatus(i)}</td></tr>`).join('')}</table></div>`:'<p class="mu">No invoices for this client yet.</p>'}
+ <label>Letterhead for the printout</label><select id="st_lh">${qOpts(db.set.lh,(db.set.lh[0]||{}).id,'— None —')}</select>
+ <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;flex-wrap:wrap"><button class="btn g" id="st_c">Close</button><button class="btn g" id="st_w">💬 Reminder</button><button class="btn" id="st_p">🖨 Print / PDF</button></div>`;
+ D.showModal();$('#st_c').onclick=()=>D.close();$('#st_p').onclick=()=>printDoc('Statement-'+c.name,stmtDoc(cid,$('#st_lh').value));
+ $('#st_w').onclick=()=>{const o=Math.max(0,T-P);window.open(waLink(c.phone,`Dear ${c.contact||c.name},\n\nThis is a gentle reminder that the total outstanding against your account is ${inr(o)}. Kindly arrange the payment at the earliest. (Statement attached)\n\nRegards,\n${coName()}`),'_blank')}}
+/* ---- tender documents checklist + EMD ---- */
+const CHK=['Tender fee / EMD proof','Firm registration / partnership deed','GST registration certificate','PAN card','Experience / work-completion certificates','Work orders of similar works','Turnover certificate (CA) and ITR / balance sheets','Technical staff list and qualification proofs','Equipment list (Total Station / DGPS / Drone) with invoices','Affidavit / undertaking / integrity pact','Power of attorney / authorisation letter','Valid digital signature certificate (DSC)','Technical bid documents signed and stamped','Financial / price bid filled','Bank solvency / bank guarantee (if required)','Final online submission and acknowledgement saved'];
+function chkDlg(id){
+ const t=db.tenders.find(a=>a.id==id);if(!t)return;t.chk=qArr(t.chk).length?qArr(t.chk).map(x=>({...x})):CHK.map(x=>({t:x,d:0}));
+ const render=()=>{const dn=t.chk.filter(x=>x.d).length;
+  D.innerHTML=`<h3 style="margin:0">Documents &amp; EMD</h3><p class="mu" style="margin:2px 0 8px">${esc(t.name)}</p>
+  <div class="g3"><div><label>EMD / security deposit (₹)</label><input id="ck_e" type="number" step="any" value="${esc(t.emd||'')}"></div><div><label>EMD status</label><select id="ck_s">${['','To pay','Paid','Refund pending','Refunded','Forfeited'].map(x=>`<option value="${x}"${(t.emds||'')==x?' selected':''}>${x||'Not required'}</option>`).join('')}</select></div><div><label>Refund expected on</label><input id="ck_r" type="date" value="${esc(t.emdr||'')}"></div></div>
+  <b style="display:block;margin:14px 0 2px">Document checklist — ${dn}/${t.chk.length} ready</b><div class="bar"><i style="width:${t.chk.length?dn/t.chk.length*100:0}%"></i></div>
+  ${t.chk.map((x,i)=>`<label class="tk"><input type="checkbox" data-ci="${i}"${x.d?' checked':''}><span>${esc(x.t)} <a href="#" data-cx="${i}" style="color:var(--bad);text-decoration:none" title="Remove">✕</a></span></label>`).join('')}
+  <div style="display:flex;gap:8px;margin-top:8px"><input id="ck_n" placeholder="Add another document…"><button class="btn g" id="ck_a">Add</button></div>
+  <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;flex-wrap:wrap">${t.award=='Won'&&!t.pid?'<button class="btn g" id="ck_p">🏗 Create project</button>':''}<button class="btn" id="ck_c">Done</button></div>`;
+  $('#ck_c').onclick=()=>{D.close();draw()};
+  const sv=()=>{t.emd=$('#ck_e').value;t.emds=$('#ck_s').value;t.emdr=$('#ck_r').value;save()};
+  ['ck_e','ck_s','ck_r'].forEach(i=>$('#'+i).onchange=sv);
+  D.querySelectorAll('[data-ci]').forEach(c=>c.onchange=()=>{sv();t.chk[+c.dataset.ci].d=c.checked?1:0;save();render()});
+  D.querySelectorAll('[data-cx]').forEach(a=>a.onclick=e=>{e.preventDefault();sv();t.chk.splice(+a.dataset.cx,1);save();render()});
+  $('#ck_a').onclick=()=>{const v=$('#ck_n').value.trim();if(!v)return;sv();t.chk.push({t:v,d:0});save();render()};
+  const p=$('#ck_p');if(p)p.onclick=()=>{D.close();mkProject({name:t.name,client:t.client,budget:t.value,tid:t.id},t)}};
+ render();if(!D.open)D.showModal()}
+/* ---- field work log ---- */
+function lightbox(src){const e=document.createElement('div');e.id='lbx';e.innerHTML=`<img src="${src}" alt="">`;e.onclick=()=>e.remove();document.body.appendChild(e)}
+function logForm(id){
+ const r=id?db.logs.find(a=>a.id==id):{date:iso()},ph=qArr(r.photos).slice();
+ const thumbs=()=>ph.map((p,i)=>`<div style="position:relative"><img class="th" style="height:60px;width:80px" src="${p}" data-gv="${i}" alt=""><a href="#" data-gx="${i}" style="position:absolute;top:-6px;right:-2px;background:#b42318;color:#fff;border-radius:50%;width:18px;height:18px;text-align:center;line-height:18px;text-decoration:none;font-size:12px">✕</a></div>`).join('');
+ D.innerHTML=`<h3 style="margin:0">${id?'Edit':'Add'} · Field work log</h3>
+ <div class="g2"><div><label>Date</label><input type="date" id="g_date" value="${esc(r.date||'')}"></div><div><label>Project</label><select id="g_project"><option value="">—</option>${db.projects.map(p=>`<option value="${esc(p.id)}"${p.id==r.project?' selected':''}>${esc(p.name)}</option>`).join('')}</select></div></div>
+ <label>Site / location</label><input id="g_site" value="${esc(r.site||'')}"><label>Team</label><input id="g_team" value="${esc(r.team||'')}" placeholder="Who was at the site">
+ <label>Work done</label><textarea id="g_work" rows="4">${esc(r.work||'')}</textarea><label>Notes / problems</label><textarea id="g_notes" rows="2">${esc(r.notes||'')}</textarea>
+ <label>Photos <span class="mu">(you can add several, up to 8)</span></label><div class="pk" id="g_ph" style="gap:10px;margin:6px 0">${thumbs()}</div><input type="file" id="g_file" accept="image/*" multiple>
+ <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn g" id="g_c">Cancel</button><button class="btn" id="g_s">Save</button></div>`;
+ D.showModal();
+ const bindPh=()=>{$('#g_ph').innerHTML=thumbs();D.querySelectorAll('[data-gv]').forEach(i=>i.onclick=()=>lightbox(ph[+i.dataset.gv]));D.querySelectorAll('[data-gx]').forEach(a=>a.onclick=e=>{e.preventDefault();ph.splice(+a.dataset.gx,1);bindPh()})};bindPh();
+ $('#g_file').onchange=async e=>{const fl=[...e.target.files];e.target.disabled=true;for(const f of fl){if(ph.length>=8){alert('Maximum 8 photos per entry.');break}try{ph.push(await loadImg(f,1000,false,true,.72))}catch(x){alert(x.message)}}e.target.disabled=false;e.target.value='';bindPh()};
+ $('#g_c').onclick=()=>D.close();
+ $('#g_s').onclick=()=>{const o=id?r:{id:uid()};['date','project','site','team','work','notes'].forEach(k=>o[k]=$('#g_'+k).value);if(!o.work.trim()&&!o.site.trim()&&!ph.length){alert('Add the work done, site or a photo.');return}o.photos=ph;if(!id)db.logs.push(o);save();D.close();draw()}}
+/* ---- reports ---- */
+let rm=iso().slice(0,7);
+function repData(){
+ const inM=d=>d&&String(d).slice(0,7)==rm,sum=a=>a.reduce((s,x)=>s+x,0),T=db.tenders.filter(t=>inM(t.date)),Q=db.quotes.filter(q=>inM(q.date)),I=db.invoices.filter(i=>inM(i.date));
+ const rec=sum(db.invoices.flatMap(i=>qArr(i.pay).filter(p=>inM(p.date)).map(p=>nz(p.amt)))),exp=sum(db.projects.flatMap(p=>qArr(p.exp).filter(e=>inM(e.date)).map(e=>nz(e.amt))));
+ const qv2=s=>Q.filter(q=>q.status==s),qsum=a=>sum(a.map(q=>qCalc(q).tot)),allI=db.invoices,out=sum(allI.map(balOf)),ovd=sum(allI.filter(i=>payStatus(i)=='Overdue').map(balOf));
+ const sections=[
+  ['Tenders (by tender date)',[['Tenders received',T.length],['Filled / submitted',T.filter(t=>t.status=='Submitted').length],['Not filled',T.filter(t=>t.status!='Submitted'&&t.status!='Closed').length],['Won',T.filter(t=>t.award=='Won').length],['Lost',T.filter(t=>t.award=='Lost').length],['Estimated value of tenders',inr(sum(T.map(t=>nz(t.value))))]]],
+  ['Quotations',[['Quotations made',Q.length],['Total value (incl. GST where added)',inr(qsum(Q))],['Sent',qv2('Sent').length],['Accepted',qv2('Accepted').length+' ('+inr(qsum(qv2('Accepted')))+')'],['Rejected',qv2('Rejected').length]]],
+  ['Money',[['Invoices raised',I.length+' ('+inr(sum(I.map(quoteTotal)))+')'],['Payments received',inr(rec)],['Project expenses',inr(exp)],['Net (received − expenses)',inr(rec-exp)]]],
+  ['Receivables (all time)',[['Total outstanding',inr(out)],['Overdue',inr(ovd)],['EMD / deposits locked',inr(sum(db.tenders.filter(t=>['Paid','Refund pending'].includes(t.emds)).map(t=>nz(t.emd))))]]]];
+ const A={};db.tenders.forEach(t=>{const a=authOf(t),o=A[a]=A[a]||{n:0,f:0,w:0,l:0};o.n++;if(t.status=='Submitted'||t.award=='Won'||t.award=='Lost')o.f++;if(t.award=='Won')o.w++;if(t.award=='Lost')o.l++});
+ const auth=Object.keys(A).sort((a,b)=>A[b].n-A[a].n).map(a=>[a,A[a].n,A[a].f,A[a].w,A[a].l,A[a].w+A[a].l?Math.round(A[a].w/(A[a].w+A[a].l)*100)+'%':'—']);
+ return{sections,auth}}
+function repHtml(d){return d.sections.map(([t,rows])=>`<h3 style="margin:16px 0 6px">${esc(t)}</h3><table>${rows.map(([a,b])=>`<tr><td>${esc(a)}</td><td class="n"><b>${esc(b)}</b></td></tr>`).join('')}</table>`).join('')+`<h3 style="margin:16px 0 6px">Win rate by authority (all tenders)</h3><table><tr><th>Authority</th><th>Tenders</th><th>Filled</th><th>Won</th><th>Lost</th><th>Win rate</th></tr>${d.auth.map(r=>`<tr>${r.map((v,i)=>`<td class="${i?'c':''}">${esc(v)}</td>`).join('')}</tr>`).join('')}</table>`}
+function reports(){
+ const d=repData();return `<div class="top"><h2>Reports</h2><input type="month" id="rmi" value="${esc(rm)}" style="width:auto"><button class="btn g" id="rcs">⬇ CSV</button><button class="btn" id="rpr">🖨 Print / PDF</button></div><div class="card tw" id="rbody">${repHtml(d)}</div>`}
+/* ---- dashboard add-ons ---- */
+const fuDays=()=>nz(db.set.fudays)||5;
+const fuList=()=>db.quotes.filter(q=>q.status=='Sent'&&q.date&&-dleft(q.date)>=fuDays()&&(!q.fu||-dleft(q.fu)>=fuDays()));
+function xStats(){const emd=db.tenders.filter(t=>['Paid','Refund pending'].includes(t.emds)).reduce((s,t)=>s+nz(t.emd),0),od=db.invoices.filter(i=>payStatus(i)=='Overdue');
+ return [['Unpaid invoices',inr(db.invoices.reduce((s,i)=>s+balOf(i),0))],['Overdue invoices',od.length],['EMD locked',inr(emd)]]}
+function xDash(){
+ const fu=fuList(),od=db.invoices.filter(i=>payStatus(i)=='Overdue');let h='';
+ if(fu.length)h+=`<h3 style="margin:0 0 8px">📞 Quotations to follow up (sent ${fuDays()}+ days ago)</h3>`+fu.map(q=>`<div class="al"><div><b>${esc(q.no)}</b> · ${esc(clientName(q.client)!='—'?clientName(q.client):(q.to||'').split('\n')[0])}<br><small>${esc(fd(q.date))} · ${-dleft(q.date)} days ago · ${inr(qCalc(q).tot)}</small></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn s" data-xa="fuw|${q.id}">💬 WhatsApp</button><button class="btn g s" data-xa="fua|${q.id}">✅ Accepted</button><button class="btn g s" data-xa="fur|${q.id}">✖ Rejected</button><button class="btn g s" data-xa="fud|${q.id}">Snooze</button></div></div>`).join('');
+ if(od.length)h+=`<h3 style="margin:14px 0 8px">💰 Overdue payments</h3>`+od.map(i=>`<div class="al"><div><b>${esc(i.no)}</b> · ${esc(clientName(i.client))}<br><small class="bad">Due ${esc(fd(i.due))} · balance ${inr(balOf(i))}</small></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn s" data-xa="rem|${i.id}">🔔 Remind</button><button class="btn g s" data-xa="pay|${i.id}">💳 Add payment</button></div></div>`).join('');
+ return h?`<div style="margin-bottom:14px">${h}</div>`:''}
+function xBind(){
+ R.onclick=e=>{const b=e.target.closest('[data-xa]');if(!b)return;const[a,id,x]=b.dataset.xa.split('|');
+  const f={pay:()=>ledger('invoices',id,'pay'),cost:()=>ledger('projects',id,'exp'),stmt:()=>stmtDlg(id),chk:()=>chkDlg(id),rem:()=>xShare('i',id,'wa','pr'),img:()=>lightbox(qArr((db.logs.find(l=>l.id==id)||{}).photos)[+x]),
+   fuw:()=>{xShare('q',id,'wa','fu');const q=db.quotes.find(z=>z.id==id);if(q){q.fu=iso();save();draw()}},fud:()=>{const q=db.quotes.find(z=>z.id==id);if(q){q.fu=iso();save();draw()}},fua:()=>setQStatus(id,'Accepted'),fur:()=>setQStatus(id,'Rejected')}[a];if(f)f()};
+ R.querySelectorAll('[data-xm]').forEach(s=>s.onchange=()=>{const[m,id]=s.dataset.xm.split('|'),v=s.value;s.value='';xMore(m,id,v)});
+ if(view=='reports'){const mi=$('#rmi');if(mi)mi.onchange=()=>{rm=mi.value||rm;draw()};
+  const p=$('#rpr');if(p)p.onclick=()=>printDoc('Report '+rm,`<div class="pg"><div class="qt">BUSINESS REPORT — ${esc(rm)}</div>${repHtml(repData())}</div>`);
+  const c=$('#rcs');if(c)c.onclick=()=>{const d=repData(),L=[['Section','Item','Value']];d.sections.forEach(([t,rows])=>rows.forEach(([a,b])=>L.push([t,a,b])));L.push([],['Authority','Tenders','Filled','Won','Lost','Win rate']);d.auth.forEach(r=>L.push(r));dl(L.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n'),'report-'+rm+'.csv','text/csv')}}}
+function invView(){
+ if(qv=='edit'&&qe&&qe.k=='i')return qEdit();if(qv=='setup')return qSetup();
+ return listView('invoices').replace('<button class="btn" data-add="invoices">','<button class="btn g" data-qs>⚙ Invoice setup</button><button class="btn" data-add="invoices">')}
+
+const NAV=[['dash','📊','Dashboard'],['clients','👥','Clients'],['tenders','📑','Tenders'],['ai','🤖','AI Assistant'],['projects','🏗','Projects'],['quotes','🧾','Quotations'],['invoices','💰','Invoices'],['logs','📷','Field log'],['reports','📈','Reports'],['tasks','✅','Tasks'],['team','⚙','Settings']];
 const TABS=['dash','tenders','clients','tasks'],MORE=NAV.map(n=>n[0]).filter(k=>!TABS.includes(k));
 function draw(){
  if(!me)return loginView();if(!synced){synced=1;syncSheet();setTimeout(()=>{autoRemind();remindPopup()},4000)}
  const nb=(k,i,l,c)=>`<button data-v="${k}" class="${view==k?'on':''}"><i>${i}</i>${c?'':l}${c?`<span>${l}</span>`:''}</button>`;
  R.innerHTML=`<div id="app"><nav class="side"><div class="brand">${logo(44)}</div>${NAV.map(([k,i,l])=>nb(k,i,l)).join('')}<div class="sp"></div><button data-th><i>🌓</i>Theme</button><button data-lo><i>⏻</i><span>Logout <small>(${esc(me.user)})</small></span></button></nav>
  <header class="mbar">${logo(34)}<button class="btn" data-th aria-label="Switch theme">🌓</button></header>
- <main>${banner()}${view=='dash'?dash():view=='team'?team():view=='ai'?ai():view=='quotes'?quotesView():listView(view)}</main>
+ <main>${banner()}${view=='dash'?dash():view=='team'?team():view=='ai'?ai():view=='quotes'?quotesView():view=='invoices'?invView():view=='reports'?reports():listView(view)}</main>
  <div class="tabs">${TABS.map(k=>NAV.find(n=>n[0]==k)).map(([k,i,l])=>nb(k,i,l,1)).join('')}<button data-moremenu class="${MORE.includes(view)||more?'on':''}"><i>☰</i><span>More</span></button></div>
  ${more?`<div class="sheet-bg" data-closemore></div><div class="sheet">${NAV.filter(n=>MORE.includes(n[0])).map(([k,i,l])=>nb(k,i,l)).join('')}<button data-lo><i>⏻</i>Logout (${esc(me.user)})</button></div>`:''}</div>`;
  bind();
@@ -665,8 +854,8 @@ function bind(){
  const on=(sel,fn)=>R.querySelectorAll(sel).forEach(e=>e.onclick=()=>fn(e));
  on('[data-v]',e=>{view=e.dataset.v;q='';more=false;draw();scrollTo(0,0)});
  on('[data-moremenu]',()=>{more=!more;draw()});on('[data-closemore]',()=>{more=false;draw()});
- on('[data-add]',e=>e.dataset.add=='quotes'?qNew():openForm(e.dataset.add));
- on('[data-ed]',e=>{const a=e.dataset.ed.split('|');a[0]=='quotes'?qOpen(a[1]):openForm(...a)});
+ on('[data-add]',e=>{const m=e.dataset.add;m=='quotes'?qNew():m=='invoices'?qNew('i'):m=='logs'?logForm():openForm(m)});
+ on('[data-ed]',e=>{const a=e.dataset.ed.split('|');a[0]=='quotes'?qOpen(a[1]):a[0]=='invoices'?qOpen(a[1],'i'):a[0]=='logs'?logForm(a[1]):openForm(...a)});
  on('[data-dl]',e=>{const[m,id]=e.dataset.dl.split('|');if(confirm('Delete this record?')){db[m]=db[m].filter(x=>x.id!=id);save();draw()}});
  on('[data-tg]',e=>{const t=db.tasks.find(x=>x.id==e.dataset.tg);t.done=!t.done;save();draw()});
  on('[data-wa]',e=>{if(!db.set.wa){alert('Set the reminder WhatsApp number under Settings first.');return}wa(db.tenders.find(x=>x.id==e.dataset.wa))});
@@ -683,7 +872,7 @@ function bind(){
  const wp=$('#wp');if(wp){const up=()=>{const p=wp.value,T={cmb:['CallMeBot API key','','','Send “I allow callmebot to send me messages” to +34 644 51 95 23 on WhatsApp to get the key.'],green:['','Instance ID (idInstance)','API token (apiTokenInstance)','Sign up at green-api.com, create an instance, scan the QR with your WhatsApp, then copy the ID and token.'],ultra:['','Instance ID (e.g. instance12345)','Token','Sign up at ultramsg.com, connect your WhatsApp and copy the instance ID and token.'],hook:['','Webhook URL','','Make/Zapier/n8n webhook URL. It receives JSON: phone, message, tender, tender_id, date, time, link.']}[p];[['#wk','#l1',0],['#w1','#l2',1],['#w2','#l3',2]].forEach(([i,l,n])=>{$(i).style.display=$(l).style.display=T[n]?'':'none';if(T[n])$(l).textContent=T[n]});$('#wh').textContent=T[3]};wp.onchange=up;up()}
  const sw=$('#sw');if(sw)sw.onclick=()=>{db.set.wa=$('#wn').value.trim();db.set.cmb=$('#wk').value.trim();db.set.prov=$('#wp').value;db.set.p1=$('#w1').value.trim();db.set.p2=$('#w2').value.trim();save();alert('Saved.');autoRemind()};
  R.querySelectorAll('[data-st]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.st);t.status=e.value;t.lock=1;delete t.lu;save();draw();pushSheet(t,'status')});
- R.querySelectorAll('[data-aw]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.aw);t.award=e.value;t.lockA=1;delete t.lua;save();draw();pushSheet(t,'award')});
+ R.querySelectorAll('[data-aw]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.aw);t.award=e.value;t.lockA=1;delete t.lua;save();draw();pushSheet(t,'award');if(e.value=='Won'&&!t.pid&&confirm('Create a project for this won tender?'))mkProject({name:t.name,client:t.client,budget:t.value,tid:t.id},t)});
  on('[data-clr]',()=>{tf='all';af='';auf='';tshow=10;draw()});
  R.querySelectorAll('[data-sel]').forEach(e=>e.onchange=()=>{e.dataset.sel=='af'?af=e.value:auf=e.value;tshow=10;draw()});
  on('[data-tf]',e=>{tf=e.dataset.tf;tshow=10;draw()});on('[data-more]',e=>{const v=e.dataset.more;tshow=v=='all'?1e9:v=='less'?10:tshow+10;draw()});
@@ -698,7 +887,7 @@ function bind(){
  const bk=$('#bk');if(bk)bk.onclick=()=>dl(JSON.stringify(db),'intech-crm-backup.json','application/json');
  const rs=$('#rs');if(rs)rs.onclick=()=>$('#rf').click();
  const rf=$('#rf');if(rf)rf.onchange=()=>{const f=rf.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tenders)&&!Array.isArray(o.clients))throw 0;db=norm(o);save();draw()}catch(e){alert('Invalid backup file.')}})};
- if(view=='quotes')qBind();
+ if(view=='quotes'||view=='invoices')qBind();xBind();
 }
 function loginView(){
  R.innerHTML=`<div id="login"><div class="card lg"><div class="lgw">${logo(54)}</div><h1>Intech Engineers</h1><p>Sign in to your CRM</p><label>Username</label><input id="u" autocomplete="username" autocapitalize="none"><label>Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="e">${esc(loginMsg)}</div><button class="btn" id="go" style="width:100%">Sign in</button></div></div>`;loginMsg='';
