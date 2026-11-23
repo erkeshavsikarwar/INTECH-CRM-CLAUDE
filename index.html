@@ -205,16 +205,9 @@ dialog{border-radius:6px;border-top:4px solid var(--yl)}
 .lgt{display:flex;margin:0 0 4px;border:1px solid var(--bd);border-radius:3px;overflow:hidden}.lgt button{flex:1;background:var(--hv);border:0;padding:10px;cursor:pointer;font-weight:600;color:var(--mu);min-height:42px}.lgt button.on{background:var(--nav);color:#fff;box-shadow:inset 0 -3px 0 var(--yl)}
 .tabs.emp{grid-template-columns:repeat(5,1fr)}
 
-.pipe{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:start}
-.pcol{background:color-mix(in srgb,var(--hv) 70%,transparent);border:1px solid var(--bd);border-top:5px solid var(--k);border-radius:4px;padding:12px;min-height:160px}
-.pcol h3{margin:0;font-size:21px;display:flex;justify-content:space-between}.pcol .mu{margin:2px 0 10px}
-.p-data{--k:var(--ac)}.p-review{--k:var(--bl)}.p-final{--k:var(--tl)}.p-done{--k:var(--ok)}
-.pc{background:var(--sf);border:1px solid var(--bd);border-left:4px solid var(--k);border-radius:3px;padding:10px 12px;margin-bottom:8px;cursor:pointer;display:flex;flex-direction:column;gap:3px}.pc:hover{background:var(--hv)}.pc.turn{box-shadow:0 0 0 2px var(--yl)}.pc small{color:var(--mu)}
-.yt{background:var(--yl);color:#1b1500;padding:1px 8px;border-radius:3px;font-size:12px;font-weight:700;align-self:flex-start}
-.stp{display:flex;gap:6px;margin:6px 0 10px;flex-wrap:wrap}.stp div{flex:1;min-width:130px;display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--hv);border-bottom:4px solid var(--bd);font-weight:600;color:var(--mu)}.stp span{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--bd);color:var(--tx);font-size:13px}
-.stp .dn{border-color:var(--ok);color:var(--tx)}.stp .dn span{background:var(--ok);color:#fff}.stp .cu{border-color:var(--yl);color:var(--tx);background:color-mix(in srgb,var(--yl) 20%,var(--sf))}.stp .cu span{background:var(--yl);color:#1b1500}
-.jlog p{margin:6px 0;font-size:14px}
-@media(max-width:1100px){.pipe{grid-template-columns:1fr 1fr}}@media(max-width:600px){.pipe{grid-template-columns:1fr}}
+.xh{display:flex;gap:12px;align-items:center}.xh>div{flex:1;min-width:0}.xh small{display:block;color:var(--mu)}.xic{font-size:28px}.xa{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.nbd{font-style:normal;background:var(--ac);color:var(--ac2);border-radius:99px;padding:0 7px;font-size:12px;font-weight:700;margin-left:auto}
+.tabs button{position:relative}.tabs .nbd{position:absolute;top:2px;right:18%;margin:0}
 </style></head><body>
 <div id="root"></div><dialog id="dlg"></dialog>
 <script>
@@ -228,7 +221,7 @@ const OWNER='intech engineers',PWH='d25db7d72523cba5ae349f25f4d486406dedd18aeedc
 /* Paste your Firebase values here (see setup steps). Leave empty = data stays only in this browser. */
 const CLOUD={apiKey:'AIzaSyCg-xbapyII8v_pRkQgmRT2hUfZJwlyp6A',dbUrl:'https://intech-crm-6add2-default-rtdb.firebaseio.com',email:'crm@intechengineers.app'};
 const CLOUD_ON=!!(CLOUD.apiKey&&CLOUD.dbUrl);CLOUD.dbUrl=CLOUD.dbUrl.replace(/\/+$/,'');
-const COLS=['clients','tenders','projects','tasks','quotes','invoices','logs','rates','jobs'];
+const COLS=['clients','tenders','projects','tasks','quotes','invoices','logs','rates'];
 const TCD=[
 ['Price & Taxes','GST @ 18% will be charged extra on the above rates.',1],
 ['Price & Taxes','The above rates are inclusive of GST.',0],
@@ -297,7 +290,7 @@ async function token(){
 const bannerText=()=>CLOUD_ON?cloudMsg:'⚠ Cloud database is not connected — data is saved only in this browser and will NOT appear on other browsers/devices.';
 const banner=()=>{const t=bannerText();return `<div id="cs" class="al" style="${t?'':'display:none'}"><div>${esc(t)}</div></div>`};
 const setBanner=()=>{const e=$('#cs');if(e){const t=bannerText();e.style.display=t?'':'none';e.firstChild.textContent=t}};
-const redraw=()=>{const a=document.activeElement;if(me&&!D.open&&!jDirty&&!(a&&['INPUT','TEXTAREA','SELECT'].includes(a.tagName)))draw()};
+const redraw=()=>{const a=document.activeElement;if(me&&!D.open&&!(a&&['INPUT','TEXTAREA','SELECT'].includes(a.tagName)))draw()};
 function save(){
  db._ts=Date.now();if(!emp())db.sites=db.projects.map(p=>({id:p.id,name:p.name}));
  if(!CLOUD_ON){try{localStorage.setItem('intech_crm',JSON.stringify(db))}catch(e){}return}
@@ -532,7 +525,7 @@ function dash(){
  const stats=[['Clients & leads',db.clients.length],['Open tenders',open.length],['Tender pipeline',inr(open.reduce((s,t)=>s+Number(t.value||0),0))],['Tender win rate',dec.length?Math.round(won.length/dec.length*100)+'%':'—'],['Running projects',db.projects.filter(p=>p.status=='Running').length],['Pending tasks',db.tasks.filter(t=>!t.done).length],['Quotes outstanding',inr(db.quotes.filter(x=>['Sent','Accepted'].includes(x.status)).reduce((s,x)=>s+quoteTotal(x),0))],...xStats()];
  const stages=['Lead','Contacted','Negotiation','Active','Inactive'],mx=Math.max(1,...stages.map(s=>db.clients.filter(c=>c.status==s).length));
  const al=dueTenders();
- return `<div class="top"><h2>Dashboard</h2></div>${hero(open)}${jobNote()}
+ return `<div class="top"><h2>Dashboard</h2></div>${hero(open)}
  ${al.length?`<h3 style="margin:0 0 8px">⏰ Tender reminders (next 2 days)</h3>`+al.map(t=>`<div class="al"><div><b>${esc(t.name)}</b><br><small>${esc(fd(t.date))} ${esc(t.time)} · ${dleft(t.date)?'in '+dleft(t.date)+' days':'<b class="bad">TODAY</b>'} · ${esc(clientName(t.client))}</small></div><button class="btn s" data-wa="${t.id}">Send on WhatsApp</button></div>`).join(''):'<div class="card" style="margin-bottom:14px">No tenders due in the next 2 days.</div>'}
  ${xDash()}<div class="grid">${stats.map(s=>`<div class="card stat"><small>${s[0]}</small><b>${s[1]}</b></div>`).join('')}</div>
  <div class="row2"><div class="card"><b>Client pipeline</b>${stages.map(s=>{const n=db.clients.filter(c=>c.status==s).length;return `<div style="margin-top:8px"><small>${s} · ${n}</small><div class="bar"><i style="width:${n/mx*100}%"></i></div></div>`}).join('')}</div>
@@ -898,75 +891,83 @@ function invView(){
 
 
 let lrole='o';
-const EMPV=['dash','jobs','tasks','logs','civil'],emp=()=>!!(me&&me.role=='emp'),navList=()=>emp()?NAV.filter(n=>EMPV.includes(n[0])):NAV,siteList=()=>emp()?Object.values(db.sites||{}).filter(Boolean):db.projects;
+const EMPV=['dash','files','tasks','logs','civil'],emp=()=>!!(me&&me.role=='emp'),navList=()=>emp()?NAV.filter(n=>EMPV.includes(n[0])):NAV,siteList=()=>emp()?Object.values(db.sites||{}).filter(Boolean):db.projects;
 async function pullEmp(first){
  const t=await token(),u=p=>`${CLOUD.dbUrl}/crm/${p}.json?auth=${t}`;
  if(!first){const ts=await jf(u('_ts'));if(!ts||ts<=base)return false}
- const [tk,lg,st,ts,jb]=await Promise.all([jf(u('tasks')),jf(u('logs')),jf(u('sites')),jf(u('_ts')),jf(u('jobs'))]);
- db=norm({tasks:tk,logs:lg,sites:st,jobs:jb});db.sites=Object.values(st||{}).filter(Boolean);base=ts||0;db._ts=base;return true}
+ const [tk,lg,st,ts]=await Promise.all([jf(u('tasks')),jf(u('logs')),jf(u('sites')),jf(u('_ts'))]);
+ db=norm({tasks:tk,logs:lg,sites:st});db.sites=Object.values(st||{}).filter(Boolean);base=ts||0;db._ts=base;return true}
 async function pushEmp(){
  const t=await token(),u=p=>`${CLOUD.dbUrl}/crm/${p}.json?auth=${t}`,rts=await jf(u('_ts'));
  if(rts&&rts>base){await pullEmp(true);dirty=false;cloudMsg='Data was changed on another device and has been refreshed — please re-check your last edit.';draw();return}
  const ts=db._ts;dirty=false;
  await jf(u('tasks'),{method:'PUT',body:JSON.stringify(db.tasks)});
  await jf(u('logs'),{method:'PUT',body:JSON.stringify(db.logs)});
- await jf(u('jobs'),{method:'PUT',body:JSON.stringify(db.jobs)});
  await jf(u('_ts'),{method:'PUT',body:JSON.stringify(ts)});base=ts;cloudMsg=''}
 function empDash(){
  const t=db.tasks.filter(x=>!x.done),od=t.filter(x=>dleft(x.due)!=null&&dleft(x.due)<0),L=t.slice().sort((a,b)=>String(a.due||'9').localeCompare(String(b.due||'9'))).slice(0,8);
- return `<div class="top"><h2>Dashboard</h2></div><div class="hero">${SKY}<div class="ht"><h3>Welcome, ${esc(me.user)}</h3><p>${t.length} open ${t.length==1?'task':'tasks'}, ${od.length} overdue</p></div><div class="chn"></div></div>${jobNote()}
+ return `<div class="top"><h2>Dashboard</h2></div><div class="hero">${SKY}<div class="ht"><h3>Welcome, ${esc(me.user)}</h3><p>${t.length} open ${t.length==1?'task':'tasks'}, ${od.length} overdue</p></div><div class="chn"></div></div>
  <div class="grid"><div class="card stat"><small>Open tasks</small><b>${t.length}</b></div><div class="card stat"><small>Overdue tasks</small><b>${od.length}</b></div><div class="card stat"><small>Field logs</small><b>${db.logs.length}</b></div></div>
  <div class="card"><b>Next tasks</b>${L.map(x=>`<p style="margin:8px 0">• ${esc(x.title)} <small class="${dleft(x.due)<0?'bad':''}">${esc(fd(x.due))}${x.who?' · '+esc(x.who):''}</small></p>`).join('')||'<p style="color:var(--mu)">No open tasks.</p>'}</div>`}
-const rulesTxt=()=>{const E_="auth.token.email.matches(/^emp[1-5]@intechengineers\\.app$/)",O="auth.token.email==='"+CLOUD.email+"'",e={'.read':E_,'.write':E_};return JSON.stringify({rules:{crm:{'.read':O,'.write':O,tasks:e,logs:e,jobs:e,sites:{'.read':E_},_ts:e}}},null,2)};
-const empCard=()=>`<div class="card" style="margin-top:12px"><b>Employee logins</b><p class="mu">Employees use the Employee tab on the login screen with the usernames <b>emp1, emp2, emp3, emp4, emp5</b>. They only see Dashboard, Tasks, Field log and Civil toolkit. They never see tenders, clients, costs, quotations or invoices.</p>
+const rulesTxt=()=>{const E_="auth.token.email.matches(/^emp[1-5]@intechengineers\\.app$/)",O="auth.token.email==='"+CLOUD.email+"'",e={'.read':E_,'.write':E_};return JSON.stringify({rules:{'.read':O,'.write':O,crm:{tasks:e,logs:e,sites:{'.read':E_},_ts:e},xfer:e}},null,2)};
+const empCard=()=>`<div class="card" style="margin-top:12px"><b>Employee logins</b><p class="mu">Employees use the Employee tab on the login screen with the usernames <b>emp1, emp2, emp3, emp4, emp5</b>. They only see Dashboard, Files, Tasks, Field log and Civil toolkit. They never see tenders, clients, costs, quotations or invoices.</p>
 <p class="mu"><b>One-time setup in Firebase:</b> (1) Authentication → Users → Add user: emp1@intechengineers.app to emp5@intechengineers.app, each with its own password. (2) Realtime Database → Rules → replace with the rules below → Publish. (3) Give each employee their username and password.</p>
 <textarea id="rul" rows="12" readonly style="font-family:ui-monospace,Menlo,monospace;font-size:12px">${esc(rulesTxt())}</textarea><p><button class="btn" onclick="navigator.clipboard&&navigator.clipboard.writeText(document.getElementById('rul').value).then(()=>toast('Rules copied'))">Copy rules</button></p></div>`;
 
-const JT=['Topographic survey','Land demarcation / boundary','Contour mapping','Layout marking','Drone survey','Levelling','Khasra superimposition','Other'],JE=['Total Station','DGPS','Drone','Auto level','Measuring tape'],DLV=['Survey plan (PDF / DWG)','Coordinate list','Contour or level map','Area statement','Site photos'],JS_=['data','review','final','done'],JN={data:'Field data',review:'Owner review',final:'Finalise',done:'Completed'},JW={data:'Employee',review:'Owner',final:'Employee',done:''};
-let jid=null,jDirty=false;
-const myJobs=()=>db.jobs.filter(j=>!emp()||!j.who||j.who==me.user),turn=j=>j.stage!='done'&&((JW[j.stage]=='Owner')==!emp()),jl=j=>Array.isArray(j.log)?j.log:Object.values(j.log||{}),jlog=(j,t)=>{j.log=jl(j).concat({t:Date.now(),by:me.user,txt:t})};
-const jobNote=()=>{const n=myJobs().filter(turn).length;return n?`<div class="al"><div><b>${n} ${n==1?'project needs':'projects need'} your action</b><br><small>Open the pipeline to continue</small></div><button class="btn s" data-v="jobs">Open pipeline</button></div>`:''};
-function syncJobProj(){if(emp())return;let ch=0;const P={data:25,review:50,final:75,done:100};db.jobs.forEach(j=>{const p=j.pid&&db.projects.find(x=>x.id==j.pid);if(!p||j.ps==j.stage)return;p.progress=P[j.stage];p.status=j.stage=='done'?'Completed':'Running';j.ps=j.stage;ch=1});if(ch)save()}
-function jobsView(){
- syncJobProj();
- if(jid){const j=db.jobs.find(x=>x.id==jid);if(j)return jobDetail(j);jid=null}
- const L=myJobs();
- return `<div class="top"><h2>Project pipeline</h2>${emp()?'':'<button class="btn" data-jn>+ Start project</button>'}</div>${jobNote()}
- <div class="pipe">${JS_.map(s=>{const c=L.filter(j=>j.stage==s);return `<section class="pcol p-${s}"><h3>${JN[s]} <small>${c.length}</small></h3><p class="mu">${{data:'Employee adds site data',review:'Owner checks and edits',final:'Employee finalises',done:'Closed projects'}[s]}</p>${c.map(j=>{const d=dleft(j.deadline);return `<div class="pc${turn(j)?' turn':''}" data-jo="${j.id}"><b>${esc(j.name)}</b><small>${[j.type,j.site].filter(Boolean).map(esc).join(', ')}</small>${j.deadline?`<small class="${d!=null&&d<0&&s!='done'?'bad':''}">Due ${esc(fd(j.deadline))}</small>`:''}${turn(j)?'<span class="yt">Your turn</span>':''}</div>`}).join('')||'<p class="mu">Nothing here.</p>'}</section>`}).join('')}</div>`}
-function jobDetail(j){
- const o=!emp(),st=j.stage,ed={b:o,d:o||st=='data'||st=='final',r:o,f:o||st=='final'},dis=k=>ed[k]?'':' disabled',i=JS_.indexOf(st);
- const f=(k,l,b,t)=>`<label>${l}</label><input data-jf="${k}" type="${t||'text'}" value="${esc(j[k]||'')}"${dis(b)}>`,
- ta=(k,l,b,r)=>`<label>${l}</label><textarea data-jf="${k}" rows="${r||3}"${dis(b)}>${esc(j[k]||'')}</textarea>`,
- sl=(k,l,a,b)=>`<label>${l}</label><select data-jf="${k}"${dis(b)}><option value="">—</option>${a.map(x=>`<option${x==j[k]?' selected':''}>${esc(x)}</option>`).join('')}</select>`;
- const A=[];if(!o&&st=='data')A.push(['sub','Submit to owner for review','']);if(o&&st=='review'){A.push(['fwd','Send to employee to finalise','']);A.push(['back','Send back for more field data','g'])}if(!o&&st=='final')A.push(['fin','Finalise project','']);
- const hint=st=='done'?'Completed'+(j.doneAt?' on '+fd(j.doneAt):'')+'.':'Waiting for <b>'+JW[st]+'</b>'+(turn(j)?' (your turn)':'')+'.';
- return `<div class="top"><button class="btn g" data-jb>Back</button><h2>${esc(j.name)}</h2>${o?'<button class="btn g r" data-jx>Delete</button>':''}</div>
- <div class="stp">${JS_.map((x,n)=>`<div class="${n<i?'dn':n==i?'cu':''}"><span>${n<i?'✓':n+1}</span>${JN[x]}</div>`).join('')}</div><p class="mu">${hint}${o||st=='done'?'':''}</p>
- <div class="row2"><div class="card"><b>Project brief</b>${f('name','Project name','b')}${sl('type','Work type',JT,'b')}<div class="g2">${f('client','Client','b')}${f('site','Site / location','b')}</div><div class="g2">${f('deadline','Deadline','b','date')}<div><label>Assigned to</label><select data-jf="who"${dis('b')}><option value="">Any employee</option>${[1,2,3,4,5].map(n=>`<option value="emp${n}"${j.who=='emp'+n?' selected':''}>emp${n}</option>`).join('')}</select></div></div>${ta('brief','Instructions from owner','b')}</div>
- <div class="card"><b>Field data</b><div class="g2">${f('sdate','Survey date','d','date')}${sl('equip','Equipment used',JE,'d')}</div><div class="g2">${f('area','Area surveyed (m²)','d','number')}${f('pts','Points / readings taken','d','number')}</div>${f('link','Drive or photo link','d')}${ta('fnotes','Field notes','d',4)}</div></div>
- <div class="row2" style="margin-top:12px"><div class="card"><b>Owner remarks</b>${ta('remark','Corrections and comments for the employee','r',5)}</div>
- <div class="card"><b>Final report</b>${ta('final','Final report notes','f',3)}<label>Deliverables ready</label>${DLV.map((x,n)=>`<label class="tk"><input type="checkbox" data-jd="${n}"${(j.dl||[])[n]?' checked':''}${dis('f')}>${x}</label>`).join('')}</div></div>
- <div class="card" style="margin-top:12px"><b>Actions</b><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center">${ed.b||ed.d||ed.f?'<button class="btn g" data-js>Save changes</button>':'<span class="mu">You can view this project but not edit it right now.</span>'}${A.map(a=>`<button class="btn ${a[2]}" data-ja="${a[0]}">${a[1]}</button>`).join('')}${o?`<select id="jmv" style="width:auto"><option value="">Move to stage…</option>${JS_.filter(x=>x!=st).map(x=>`<option value="${x}">${JN[x]}</option>`).join('')}</select>`:''}</div></div>
- <div class="card jlog" style="margin-top:12px"><b>Activity</b>${jl(j).slice().reverse().map(l=>`<p>${esc(new Date(l.t).toLocaleString('en-IN'))}, <b>${esc(l.by)}</b>: ${esc(l.txt)}</p>`).join('')||'<p class="mu">No activity yet.</p>'}</div>`}
-function jobBind(){
- const on=(q,fn)=>R.querySelectorAll(q).forEach(e=>e.onclick=()=>fn(e));
- on('[data-jo]',e=>{jid=e.dataset.jo;jDirty=false;draw();scrollTo(0,0)});on('[data-jn]',jobNew);on('[data-jb]',()=>{jid=null;jDirty=false;draw()});
- R.querySelectorAll('[data-jf],[data-jd]').forEach(e=>e.oninput=()=>{jDirty=true});
- const j=jid&&db.jobs.find(x=>x.id==jid);if(!j)return;
- const col=()=>{R.querySelectorAll('[data-jf]:not(:disabled)').forEach(e=>j[e.dataset.jf]=e.value);const d=[...R.querySelectorAll('[data-jd]')];if(d.length&&!d[0].disabled)j.dl=d.map(e=>e.checked?1:0)},fin=m=>{jDirty=false;save();draw();toast(m)};
- on('[data-js]',()=>{col();fin('Saved')});
- on('[data-ja]',e=>{const a=e.dataset.ja,M={sub:['review','Submitted to owner for review'],fwd:['final','Sent to employee to finalise'],back:['data','Sent back for more field data'],fin:['done','Project finalised']}[a];
-  if(a=='fin'&&!confirm('Finalise this project? You will not be able to edit it afterwards.'))return;
-  col();j.stage=M[0];jlog(j,M[1]);if(M[0]=='done')j.doneAt=iso();else delete j.doneAt;fin(M[1])});
- const mv=$('#jmv');if(mv)mv.onchange=()=>{if(!mv.value)return;col();j.stage=mv.value;jlog(j,'Owner moved the project to '+JN[mv.value]);if(mv.value=='done')j.doneAt=iso();else delete j.doneAt;fin('Stage changed')};
- on('[data-jx]',()=>{if(confirm('Delete this project from the pipeline?')){db.jobs=db.jobs.filter(x=>x.id!=j.id);jid=null;fin('Deleted')}})}
-function jobNew(){
- D.innerHTML=`<h3 style="margin:0">Start project</h3><label>Project name</label><input id="n_name"><div class="g2"><div><label>Work type</label><select id="n_type">${JT.map(x=>`<option>${x}</option>`).join('')}</select></div><div><label>Deadline</label><input type="date" id="n_dl"></div></div><div class="g2"><div><label>Client</label><input id="n_cl"></div><div><label>Site / location</label><input id="n_site"></div></div><label>Assign to</label><select id="n_who"><option value="">Any employee</option>${[1,2,3,4,5].map(n=>`<option value="emp${n}">emp${n}</option>`).join('')}</select><label>Instructions for the employee</label><textarea id="n_ins" rows="3"></textarea><label class="tk"><input type="checkbox" id="n_pj" checked>Also add to Projects for budget tracking</label><label>Budget (₹, optional, never shown to employees)</label><input id="n_bud" type="number"><div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end"><button class="btn g" id="n_c">Cancel</button><button class="btn" id="n_s">Start project</button></div>`;
- D.showModal();$('#n_c').onclick=()=>D.close();
- $('#n_s').onclick=()=>{const name=$('#n_name').value.trim();if(!name){alert('Enter the project name.');return}
-  const j={id:uid(),name,type:$('#n_type').value,deadline:$('#n_dl').value,client:$('#n_cl').value.trim(),site:$('#n_site').value.trim(),who:$('#n_who').value,brief:$('#n_ins').value,stage:'data',created:iso(),dl:[0,0,0,0,0],log:[{t:Date.now(),by:me.user,txt:'Project started and sent to the employee'}]};
-  if($('#n_pj').checked){const p={id:uid(),name,client:'',budget:$('#n_bud').value,progress:25,deadline:j.deadline,status:'Running'};db.projects.push(p);j.pid=p.id;j.ps='data'}
-  db.jobs.push(j);save();D.close();jid=j.id;draw()}}
+const XB=CLOUD.dbUrl+'/xfer',meId=()=>emp()?me.user:'owner',who_=x=>x=='owner'?'Owner':x,
+xic=n=>({dwg:'📐',dxf:'📐',pdf:'📄',xls:'📊',xlsx:'📊',csv:'📊',doc:'📝',docx:'📝',jpg:'🖼',jpeg:'🖼',png:'🖼',zip:'🗜',rar:'🗜'}[(String(n).split('.').pop()||'').toLowerCase()]||'📎'),
+xsz=b=>b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB',okurl=u=>/^https?:\/\//i.test(u||'');
+let xf={items:[],tab:'in',re:null,t:0,err:''};
+const xu=async p=>`${XB}/${p}.json?auth=${await token()}`;
+async function xLoad(){try{const j=await jf(await xu('items'));xf.items=Object.values(j||{}).filter(Boolean).sort((a,b)=>b.ts-a.ts);xf.err=''}catch(e){xf.err='Could not load files ('+e.message+'). Check that the Firebase rules were updated.'}}
+const xBadge=()=>{const n=xf.items.filter(i=>i.to==meId()&&i.st!='done').length;R.querySelectorAll('[data-v="files"]').forEach(b=>{const o=b.querySelector('.nbd');if(o)o.remove();if(n){const e=document.createElement('em');e.className='nbd';e.textContent=n;b.appendChild(e)}})};
+function xPoll(){if(!CLOUD_ON||!me||Date.now()-xf.t<15000)return;xf.t=Date.now();xLoad().then(()=>{xBadge();xPaint()})}
+const filesView=()=>{
+ if(!CLOUD_ON)return `<div class="top"><h2>Files</h2></div><div class="card">File transfer needs the cloud database to be connected.</div>`;
+ const opts=(emp()?['owner']:[]).concat([1,2,3,4,5].map(n=>'emp'+n)).filter(x=>x!=meId());
+ return `<div class="top"><h2>Files</h2><small style="color:var(--mu)">Send CAD, PDF and other files for changes</small></div>
+ <div class="card" id="xform"><b>Send a file</b><label>Send to</label><select id="xto">${opts.map(x=>`<option value="${x}">${who_(x)}</option>`).join('')}</select>
+ <label>Files (DWG, DXF, PDF, Excel, photos, ZIP, up to 10 MB each)</label><input type="file" id="xfi" multiple>
+ <label>Or paste a Drive link (for bigger files)</label><input id="xlk" placeholder="https://drive.google.com/…">
+ <label>What should they do?</label><textarea id="xno" rows="3" placeholder="Example: Update the boundary line in the DWG and send it back"></textarea>
+ <div id="xre"></div><div style="display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap"><button class="btn" id="xsend">Send</button><span class="mu" id="xmsg"></span></div></div>
+ <div style="display:flex;gap:8px;margin:14px 0 8px"><button class="btn s" data-xt="in">Inbox</button><button class="btn s" data-xt="out">Sent</button></div><div id="xl"></div>
+ <p class="mu">Delete files when the work is finished to save database space.</p>`};
+function xPaint(){
+ const l=$('#xl');if(!l)return;const m=meId(),A=xf.items.filter(i=>xf.tab=='in'?i.to==m:i.from==m);
+ R.querySelectorAll('[data-xt]').forEach(b=>b.className='btn s'+(b.dataset.xt==xf.tab?'':' g'));
+ l.innerHTML=(xf.err?`<p class="bad">${esc(xf.err)}</p>`:'')+(A.map(i=>{const re=i.re&&xf.items.find(x=>x.id==i.re);return `<div class="card xi" style="margin-bottom:10px"><div class="xh"><span class="xic">${i.nofile?'💬':xic(i.name)}</span><div><b>${esc(i.name||'Message')}</b><small>${i.nofile?'':xsz(i.size)+', '}${xf.tab=='in'?'from '+esc(who_(i.from)):'to '+esc(who_(i.to))}, ${esc(new Date(i.ts).toLocaleString('en-IN'))}</small></div><span class="tag ${i.st=='done'?'s-completed':'s-high'}">${i.st=='done'?'Done':'New'}</span></div>${re?`<small class="mu">Reply to: ${esc(re.name||'message')}</small>`:''}${i.note?`<p style="margin:8px 0">${esc(i.note)}</p>`:''}<div class="xa">${i.nofile?'':`<button class="btn s" data-xd="${i.id}">Download</button>`}${okurl(i.link)?`<a class="btn g s" href="${esc(i.link)}" target="_blank" rel="noopener">Open link</a>`:''}${xf.tab=='in'?`<button class="btn g s" data-xr="${i.id}">Reply with updated file</button>${i.st=='done'?'':`<button class="btn g s" data-xk="${i.id}">Mark done</button>`}`:''}<button class="btn g s r" data-xx="${i.id}">Delete</button></div></div>`}).join('')||`<p class="mu">${xf.tab=='in'?'Nothing received yet.':'Nothing sent yet.'}</p>`);
+ const on=(q,fn)=>l.querySelectorAll(q).forEach(e=>e.onclick=()=>fn(e)),it=e=>xf.items.find(x=>x.id==e);
+ on('[data-xd]',async e=>{const i=it(e.dataset.xd);try{toast('Preparing '+i.name+'…');const d=await jf(await xu('data/'+i.id));if(!d)throw new Error('file not found');const b=await (await fetch(d)).blob(),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=i.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}catch(x){toast('Download failed: '+x.message,1)}});
+ on('[data-xr]',e=>{const i=it(e.dataset.xr);xf.re=i.id;const t=$('#xto');if(t&&[...t.options].some(o=>o.value==i.from))t.value=i.from;$('#xre').innerHTML=`<div class="al" style="margin-top:10px"><div>Replying to <b>${esc(i.name||'message')}</b>. The original is marked done when you send.</div><button class="btn g s" id="xrx">Cancel</button></div>`;$('#xrx').onclick=()=>{xf.re=null;$('#xre').innerHTML=''};$('#xform').scrollIntoView({behavior:'smooth'})});
+ on('[data-xk]',async e=>{const i=it(e.dataset.xk);try{await jf(await xu('items/'+i.id+'/st'),{method:'PUT',body:'"done"'});i.st='done';xPaint()}catch(x){toast('Could not update: '+x.message,1)}});
+ on('[data-xx]',async e=>{const i=it(e.dataset.xx);if(!confirm('Delete "'+(i.name||'message')+'" for everyone?'))return;try{await jf(await xu('items/'+i.id),{method:'DELETE'});await jf(await xu('data/'+i.id),{method:'DELETE'});xf.items=xf.items.filter(x=>x.id!=i.id);xPaint()}catch(x){toast('Could not delete: '+x.message,1)}});
+ xBadge()}
+function xBindF(){
+ R.querySelectorAll('[data-xt]').forEach(b=>b.onclick=()=>{xf.tab=b.dataset.xt;xPaint()});
+ xf.t=Date.now();xPaint();xLoad().then(xPaint);
+ if(xf.re){const i=xf.items.find(x=>x.id==xf.re);if(!i)xf.re=null}
+ const sd=$('#xsend');if(!sd)return;
+ sd.onclick=async()=>{
+  const to=$('#xto').value,fs=[...$('#xfi').files],note=$('#xno').value.trim(),m=$('#xmsg');let lk=$('#xlk').value.trim();
+  if(lk&&!/^https?:\/\//i.test(lk))lk='https://'+lk;
+  if(!to||(!fs.length&&!lk&&!note)){m.textContent='Choose a file, paste a link or write a note.';return}
+  const big=fs.find(f=>f.size>10485760);if(big){m.textContent=big.name+' is over 10 MB. Upload it to Google Drive and paste the link instead.';return}
+  sd.disabled=true;
+  try{
+   const base={from:meId(),to,note,ts:Date.now(),st:'new'};if(xf.re)base.re=xf.re;
+   const list=fs.length?fs:[null];
+   for(let n=0;n<list.length;n++){
+    const f=list[n],id=Date.now().toString(36)+uid(),it={...base,id,link:n?'':lk};
+    if(f){m.textContent='Uploading '+(n+1)+' of '+list.length+'…';
+     const d=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=()=>no(new Error('could not read '+f.name));r.readAsDataURL(f)});
+     await jf(await xu('data/'+id),{method:'PUT',body:JSON.stringify(d)});Object.assign(it,{name:f.name,size:f.size})}
+    else{it.nofile=1;it.name=lk?'Link':'Message'}
+    await jf(await xu('items/'+id),{method:'PUT',body:JSON.stringify(it)})}
+   if(xf.re){const p=xf.items.find(x=>x.id==xf.re);if(p&&p.st!='done')await jf(await xu('items/'+p.id+'/st'),{method:'PUT',body:'"done"'});xf.re=null}
+   toast('Sent to '+who_(to));await xLoad();xf.tab='out';draw()
+  }catch(e){m.textContent='Could not send: '+e.message;sd.disabled=false}}}
+setInterval(()=>{if(me&&CLOUD_ON&&!document.hidden){xf.t=Date.now();xLoad().then(()=>{xBadge();xPaint()})}},20000);
 const SKY=`<svg viewBox="0 0 620 150" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M0 128H620" stroke="#fff" stroke-opacity=".5"/><g stroke="#fff" stroke-opacity=".55" stroke-width="1.5"><path d="M20 100H300M40 100V128M280 100V128M40 100Q160 14 280 100"/><path d="M80 100V58M110 100V40M140 100V30M170 100V30M200 100V40M230 100V58" stroke-dasharray="3 3"/><path d="M545 128V52H600V128M545 72H600M545 92H600M545 110H600"/><path d="M340 96L328 128M340 96L352 128M340 96V128M332 78H348V96H332ZM340 66V78"/></g><g stroke="#f2b705" stroke-width="2"><path d="M430 128V28M446 128V28M370 28H520M400 28L430 8H446L470 28M430 128L446 100L430 76L446 52L430 28M500 28V84M492 84H508V96H492Z"/></g></svg>`;
 const hero=o=>{const r=db.projects.filter(p=>p.status=='Running').length;return `<div class="hero">${SKY}<div class="ht"><h3>${r} ${r==1?'site':'sites'} running</h3><p>${o.length} open ${o.length==1?'tender':'tenders'} worth ${inr(o.reduce((s,t)=>s+Number(t.value||0),0))} in the pipeline</p></div><svg class="na" viewBox="0 0 40 52" aria-label="North"><circle cx="20" cy="31" r="16" stroke="#fff" stroke-opacity=".6"/><path d="M20 10L28 38L20 32L12 38Z" fill="#f2b705"/><text x="20" y="8" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">N</text></svg><div class="chn"></div></div>`};
 const civView=()=>{const f=(i,l,v)=>`<div><label>${l}</label><input id="${i}" inputmode="decimal" value="${v}"></div>`;
@@ -994,14 +995,14 @@ function civBind(){
   const m2=n('lv')*n('lu');
   set('lr',rw('Square metre',fx(m2))+rw('Square foot',fx(m2/0.09290304))+rw('Square yard (gaj)',fx(m2/0.83612736))+rw('Acre',fx(m2/4046.8564224,4))+rw('Hectare',fx(m2/1e4,4)))};
  R.querySelectorAll('main textarea,main input,main select').forEach(e=>e.oninput=calc);calc()}
-const NAV=[['dash','🧭','Dashboard'],['clients','👷','Clients'],['tenders','📐','Tenders'],['ai','🛰','AI Assistant'],['projects','🏗','Projects'],['jobs','🚧','Pipeline'],['civil','📏','Civil toolkit'],['quotes','🧾','Quotations'],['invoices','💰','Invoices'],['logs','📍','Field log'],['reports','📊','Reports'],['tasks','🦺','Tasks'],['team','⚙','Settings']];
+const NAV=[['dash','🧭','Dashboard'],['files','📁','Files'],['clients','👷','Clients'],['tenders','📐','Tenders'],['ai','🛰','AI Assistant'],['projects','🏗','Projects'],['civil','📏','Civil toolkit'],['quotes','🧾','Quotations'],['invoices','💰','Invoices'],['logs','📍','Field log'],['reports','📊','Reports'],['tasks','🦺','Tasks'],['team','⚙','Settings']];
 const TABS=['dash','tenders','clients','tasks'],MORE=NAV.map(n=>n[0]).filter(k=>!TABS.includes(k));
 function draw(){
  if(!me)return loginView();if(emp()&&!EMPV.includes(view))view='dash';if(!synced){synced=1;syncSheet();setTimeout(()=>{autoRemind();remindPopup()},4000)}
  const nb=(k,i,l,c)=>`<button data-v="${k}" class="${view==k?'on':''}"><i>${i}</i>${c?'':l}${c?`<span>${l}</span>`:''}</button>`;
  R.innerHTML=`<div id="app"><nav class="side"><div class="brand">${logo(44)}</div>${navList().map(([k,i,l])=>nb(k,i,l)).join('')}<div class="sp"></div><button data-th><i>🌓</i>Theme</button><button data-lo><i>⏻</i><span>Logout <small>(${esc(me.user)})</small></span></button></nav>
  <header class="mbar">${logo(34)}<button class="btn" data-th aria-label="Switch theme">🌓</button></header>
- <main>${banner()}${view=='dash'?(emp()?empDash():dash()):view=='team'?team()+empCard():view=='ai'?ai():view=='quotes'?quotesView():view=='invoices'?invView():view=='reports'?reports():view=='civil'?civView():view=='jobs'?jobsView():listView(view)}</main>
+ <main>${banner()}${view=='dash'?(emp()?empDash():dash()):view=='team'?team()+empCard():view=='ai'?ai():view=='quotes'?quotesView():view=='invoices'?invView():view=='reports'?reports():view=='civil'?civView():view=='files'?filesView():listView(view)}</main>
  <div class="tabs${emp()?' emp':''}">${(emp()?EMPV:TABS).map(k=>NAV.find(n=>n[0]==k)).map(([k,i,l])=>nb(k,i,l,1)).join('')}${emp()?'':`<button data-moremenu class="${MORE.includes(view)||more?'on':''}"><i>☰</i><span>More</span></button>`}</div>
  ${more?`<div class="sheet-bg" data-closemore></div><div class="sheet">${NAV.filter(n=>MORE.includes(n[0])).map(([k,i,l])=>nb(k,i,l)).join('')}<button data-lo><i>⏻</i>Logout (${esc(me.user)})</button></div>`:''}</div>`;
  bind();
@@ -1043,7 +1044,7 @@ function bind(){
  const bk=$('#bk');if(bk)bk.onclick=()=>dl(JSON.stringify(db),'intech-crm-backup.json','application/json');
  const rs=$('#rs');if(rs)rs.onclick=()=>$('#rf').click();
  const rf=$('#rf');if(rf)rf.onchange=()=>{const f=rf.files[0];if(!f)return;f.text().then(t=>{try{const o=JSON.parse(t);if(!Array.isArray(o.tenders)&&!Array.isArray(o.clients))throw 0;db=norm(o);save();draw()}catch(e){alert('Invalid backup file.')}})};
- if(view=='quotes'||view=='invoices')qBind();if(view=='civil')civBind();if(view=='jobs')jobBind();xBind();
+ if(view=='quotes'||view=='invoices')qBind();if(view=='civil')civBind();if(view=='files')xBindF();xBadge();xPoll();xBind();
 }
 function loginView(){
  R.innerHTML=`<div id="login"><div class="card lg"><div class="lgw">${logo(54)}</div><h1>Intech Engineers</h1><p>Land survey and civil works control room</p><div class="lgt"><button data-lr="o" class="${lrole=='o'?'on':''}">Owner</button><button data-lr="e" class="${lrole=='e'?'on':''}">Employee</button></div><label>Username</label><input id="u" autocomplete="username" autocapitalize="none" placeholder="${lrole=='e'?'emp1 to emp5':''}"><label>Password</label><input id="p" type="password" autocomplete="current-password"><div class="err" id="e">${esc(loginMsg)}</div><button class="btn" id="go" style="width:100%">Sign in</button></div></div>`;loginMsg='';R.querySelectorAll('[data-lr]').forEach(b=>b.onclick=()=>{lrole=b.dataset.lr;loginView()});
