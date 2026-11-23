@@ -384,7 +384,7 @@ function openForm(m,id){
    if(o.gst&&!/^\d{2}[A-Z]{5}\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/.test(o.gst))bad.push('GST number (should be 15 characters, e.g. 07ABCDE1234F1Z5)');
    if(o.pan&&!/^[A-Z]{5}\d{4}[A-Z]$/.test(o.pan))bad.push('PAN number (should be 10 characters, e.g. ABCDE1234F)');
    if(bad.length&&!confirm('Please check: '+bad.join(' and ')+'.\n\nSave anyway?'))return}
-  if(m=='tenders'&&r.id){o.lock=1;delete o.lu;delete o.lua}if(!r.id)db[m].push(o);save();D.close();draw();if(m=='tenders'&&r.id){if(o.status!=ps)pushSheet(o,'status');if(o.award!=pa)pushSheet(o,'award')}};
+  if(m=='tenders'&&r.id){o.lock=1;delete o.lu;delete o.lua}if(!r.id)db[m].push(o);save();D.close();draw();if(m=='tenders'&&r.id){if(o.status!=ps)pushSheet(o,'status');if(o.award!=pa)pushSheet(o,'award')}if(m=='tenders'&&o.award=='Won'&&pa!='Won'&&!o.pid)tenderWon(o)};
 }
 const remMsg=t=>`⏰ *Tender Reminder – Intech Engineers*\n\nYou have a tender on *${fd(t.date)}${t.time?' at '+t.time:''}*.\nKindly fill it on time.\n\nTender: ${t.name}\nID: ${t.tid||'—'}${t.notes?'\nDetails: '+t.notes:''}${t.link?'\nFolder: '+t.link:''}`;
 function wa(t){window.open('https://wa.me/'+(db.set.wa||'').replace(/\D/g,'')+'?text='+encodeURIComponent(remMsg(t)),'_blank')}
@@ -756,7 +756,45 @@ function xShare(kind,id,how,type){
  if(how=='wa'){if(!c.phone&&!confirm('This client has no phone number saved. Open WhatsApp anyway so you can pick the contact?'))return;window.open(waLink(c.phone,txt),'_blank')}
  else window.open('mailto:'+encodeURIComponent(c.email||'')+'?subject='+encodeURIComponent((type=='fu'?'Follow-up: quotation ':type=='pr'?'Payment reminder: invoice ':kind=='i'?'Invoice ':'Quotation ')+(r.no||''))+'&body='+encodeURIComponent(txt),'_self');
  toast('Message opened — attach the saved PDF before sending')}
-function mkProject(o,src){const p={id:uid(),name:o.name||'New project',client:o.client||'',budget:o.budget||'',progress:0,deadline:'',status:'Planning',qid:o.qid||'',tid:o.tid||''};db.projects.push(p);if(src)src.pid=p.id;save();toast('✔ Project created');view='projects';draw()}
+function mkProjectCore(o,src){const p={id:uid(),name:o.name||'New project',client:o.client||'',budget:o.budget||'',progress:0,deadline:'',status:'Planning',qid:o.qid||'',tid:o.tid||''};db.projects.push(p);if(src)src.pid=p.id;return p}
+function mkProject(o,src){mkProjectCore(o,src);save();toast('✔ Project created');view='projects';draw()}
+/* ---- Tender WON -> client + project + standard task list + draft quotation (one click) ---- */
+/* Edit this list to change the standard tasks: [task name, due in N days from the day the tender is won, priority] */
+const WON_TASKS=[['Site visit',3,'High'],['Survey',10,'High'],['Drawing',15,'Medium'],['Report',20,'Medium'],['Invoice',25,'Medium']];
+function wonClient(t){
+ let c=db.clients.find(x=>x.id==t.client);if(c)return{c,added:0};
+ const a=authOf(t),byAuth=a!='Other';
+ const nm=byAuth?a:(prompt('Client / department name for this won tender (leave blank to skip):','')||'').trim();
+ if(!nm)return{c:null,added:0};
+ c=db.clients.find(x=>byAuth?new RegExp('\\b'+nm+'\\b','i').test(x.name||''):String(x.name||'').trim().toLowerCase()==nm.toLowerCase());
+ if(c)return{c,added:0};
+ c={id:uid(),name:nm,contact:'',phone:'',email:'',city:'',gst:'',pan:'',status:'Active',notes:'Added automatically from won tender: '+t.name+(t.tid?' ('+t.tid+')':'')};
+ db.clients.push(c);return{c,added:1}}
+function wonQuote(t,c,p){
+ const it=[{d:t.name+(t.tid?'\n(Tender ID: '+t.tid+')':''),u:'Nos',q:1,r:t.value||''}];
+ const x={id:uid(),k:'q',no:qNext('q'),date:iso(),client:c?c.id:'',to:c?c.name+(c.city?'\n'+c.city:'')+(c.gst?'\nGSTIN: '+c.gst:'')+(c.pan?'\nPAN: '+c.pan:''):'',subject:t.name,items:it,gst:18,gstMode:'extra',gstType:'intra',due:'',status:'Draft',lh:(db.set.lh[0]||{}).id||'',sg:[],st:[],forText:db.set.qfor??'For Intech Engineers',signName:db.set.qsn??'',signTitle:db.set.qst??'Authorised Signatory',tsel:db.set.tc.filter(a=>a.pre).map(a=>a.id),tx:[],tid:t.id,pid:p.id};
+ x.terms=db.set.tc.filter(a=>x.tsel.includes(a.id)).map(a=>a.text);
+ x.amount=qCalc(x).sub;x.item=it[0].d;db.quotes.push(x);return x}
+function tenderWon(t){
+ if(!t||t.pid)return;
+ if(!confirm('🎉 Tender won!\n\nCreate automatically:\n• Client record (if not already there)\n• Project\n• Task list: '+WON_TASKS.map(x=>x[0]).join(', ')+' (with due dates)\n• Draft quotation\n\nContinue?'))return;
+ const {c,added}=wonClient(t);if(c)t.client=c.id;
+ const p=mkProjectCore({name:t.name,client:c?c.id:'',budget:t.value,tid:t.id},t);
+ const q=wonQuote(t,c,p);p.qid=q.id;t.qid=q.id;
+ WON_TASKS.forEach(([n,d,pri])=>db.tasks.push({id:uid(),title:n+' – '+p.name,who:t.owner||'',due:addDays(d),pri,done:false,pid:p.id,auto:1}));
+ p.deadline=addDays(Math.max(...WON_TASKS.map(x=>x[1])));
+ save();draw();toast('✔ Client, project, tasks and draft quotation created');
+ D.innerHTML=`<h3 style="margin:0">🎉 Tender won — everything is set up</h3><p class="mu" style="margin:4px 0 10px">${esc(t.name)}</p>
+ <p style="margin:6px 0">👷 Client: <b>${esc(c?c.name:'not set — add one in Clients')}</b>${c?(added?' (new)':' (already existed)'):''}</p>
+ <p style="margin:6px 0">🏗 Project: <b>${esc(p.name)}</b> · deadline ${esc(fd(p.deadline))}</p>
+ <p style="margin:6px 0">🦺 Tasks: ${WON_TASKS.map(([n,d])=>esc(n)+' ('+esc(fd(addDays(d)))+')').join(' · ')}</p>
+ <p style="margin:6px 0">🧾 Draft quotation: <b>${esc(q.no)}</b> — ${t.value?'rate '+inr(t.value)+' (from estimated cost)':'rate to be filled'}</p>
+ <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px"><button class="btn g" id="wj_p">Open project</button><button class="btn g" id="wj_t">Open tasks</button><button class="btn" id="wj_q">Edit quotation</button><button class="btn g" id="wj_c">Close</button></div>`;
+ D.showModal();
+ $('#wj_c').onclick=()=>D.close();
+ $('#wj_p').onclick=()=>{D.close();view='projects';draw()};
+ $('#wj_t').onclick=()=>{D.close();view='tasks';draw()};
+ $('#wj_q').onclick=()=>{D.close();view='quotes';qv='list';draw();qOpen(q.id,'q')}}
 function setQStatus(id,st){const q=db.quotes.find(x=>x.id==id);if(!q)return;q.status=st;q.fu=iso();save();draw();
  if(st=='Accepted'&&!q.pid&&confirm('Create a project for this accepted quotation?'))mkProject({name:(q.subject||qItems(q)[0].d||'Project').split('\n')[0].slice(0,100),client:q.client,budget:qCalc(q).sub,qid:q.id},q)}
 function toInvoice(id){const q=db.quotes.find(a=>a.id==id);if(!q)return;
@@ -824,14 +862,14 @@ function chkDlg(id){
   <b style="display:block;margin:14px 0 2px">Document checklist — ${dn}/${t.chk.length} ready</b><div class="bar"><i style="width:${t.chk.length?dn/t.chk.length*100:0}%"></i></div>
   ${t.chk.map((x,i)=>`<label class="tk"><input type="checkbox" data-ci="${i}"${x.d?' checked':''}><span>${esc(x.t)} <a href="#" data-cx="${i}" style="color:var(--bad);text-decoration:none" title="Remove">✕</a></span></label>`).join('')}
   <div style="display:flex;gap:8px;margin-top:8px"><input id="ck_n" placeholder="Add another document…"><button class="btn g" id="ck_a">Add</button></div>
-  <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;flex-wrap:wrap">${t.award=='Won'&&!t.pid?'<button class="btn g" id="ck_p">🏗 Create project</button>':''}<button class="btn" id="ck_c">Done</button></div>`;
+  <div style="display:flex;gap:8px;margin-top:14px;justify-content:flex-end;flex-wrap:wrap">${t.award=='Won'&&!t.pid?'<button class="btn g" id="ck_p">🏗 Create project, tasks &amp; quotation</button>':''}<button class="btn" id="ck_c">Done</button></div>`;
   $('#ck_c').onclick=()=>{D.close();draw()};
   const sv=()=>{t.emd=$('#ck_e').value;t.emds=$('#ck_s').value;t.emdr=$('#ck_r').value;save()};
   ['ck_e','ck_s','ck_r'].forEach(i=>$('#'+i).onchange=sv);
   D.querySelectorAll('[data-ci]').forEach(c=>c.onchange=()=>{sv();t.chk[+c.dataset.ci].d=c.checked?1:0;save();render()});
   D.querySelectorAll('[data-cx]').forEach(a=>a.onclick=e=>{e.preventDefault();sv();t.chk.splice(+a.dataset.cx,1);save();render()});
   $('#ck_a').onclick=()=>{const v=$('#ck_n').value.trim();if(!v)return;sv();t.chk.push({t:v,d:0});save();render()};
-  const p=$('#ck_p');if(p)p.onclick=()=>{D.close();mkProject({name:t.name,client:t.client,budget:t.value,tid:t.id},t)}};
+  const p=$('#ck_p');if(p)p.onclick=()=>{D.close();tenderWon(t)}};
  render();if(!D.open)D.showModal()}
 /* ---- field work log ---- */
 function lightbox(src){const e=document.createElement('div');e.id='lbx';e.innerHTML=`<img src="${src}" alt="">`;e.onclick=()=>e.remove();document.body.appendChild(e)}
@@ -1029,7 +1067,7 @@ function bind(){
  const wp=$('#wp');if(wp){const up=()=>{const p=wp.value,T={cmb:['CallMeBot API key','','','Send “I allow callmebot to send me messages” to +34 644 51 95 23 on WhatsApp to get the key.'],green:['','Instance ID (idInstance)','API token (apiTokenInstance)','Sign up at green-api.com, create an instance, scan the QR with your WhatsApp, then copy the ID and token.'],ultra:['','Instance ID (e.g. instance12345)','Token','Sign up at ultramsg.com, connect your WhatsApp and copy the instance ID and token.'],hook:['','Webhook URL','','Make/Zapier/n8n webhook URL. It receives JSON: phone, message, tender, tender_id, date, time, link.']}[p];[['#wk','#l1',0],['#w1','#l2',1],['#w2','#l3',2]].forEach(([i,l,n])=>{$(i).style.display=$(l).style.display=T[n]?'':'none';if(T[n])$(l).textContent=T[n]});$('#wh').textContent=T[3]};wp.onchange=up;up()}
  const sw=$('#sw');if(sw)sw.onclick=()=>{db.set.wa=$('#wn').value.trim();db.set.cmb=$('#wk').value.trim();db.set.prov=$('#wp').value;db.set.p1=$('#w1').value.trim();db.set.p2=$('#w2').value.trim();save();alert('Saved.');autoRemind()};
  R.querySelectorAll('[data-st]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.st);t.status=e.value;t.lock=1;delete t.lu;save();draw();pushSheet(t,'status')});
- R.querySelectorAll('[data-aw]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.aw);t.award=e.value;t.lockA=1;delete t.lua;save();draw();pushSheet(t,'award');if(e.value=='Won'&&!t.pid&&confirm('Create a project for this won tender?'))mkProject({name:t.name,client:t.client,budget:t.value,tid:t.id},t)});
+ R.querySelectorAll('[data-aw]').forEach(e=>e.onchange=()=>{const t=db.tenders.find(x=>x.id==e.dataset.aw);t.award=e.value;t.lockA=1;delete t.lua;save();draw();pushSheet(t,'award');if(e.value=='Won'&&!t.pid)tenderWon(t)});
  on('[data-clr]',()=>{tf='all';af='';auf='';tshow=10;draw()});
  R.querySelectorAll('[data-sel]').forEach(e=>e.onchange=()=>{e.dataset.sel=='af'?af=e.value:auf=e.value;tshow=10;draw()});
  on('[data-tf]',e=>{tf=e.dataset.tf;tshow=10;draw()});on('[data-more]',e=>{const v=e.dataset.more;tshow=v=='all'?1e9:v=='less'?10:tshow+10;draw()});
